@@ -1,0 +1,5330 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Vanguard Trigger Battle</title>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+<style>
+
+/* =========================================================
+   MINIMAL THEME
+========================================================= */
+
+:root{
+    --bg:#f4f5f7;
+    --surface:#ffffff;
+    --surface2:#f8f9fb;
+    --border:#e7e9ee;
+
+    --text:#17191f;
+    --muted:#7b8190;
+
+    --green:#19a974;
+    --red:#e5484d;
+    --yellow:#f4c430;
+    --pink:#ee6fa8;
+    --blue:#5b7cfa;
+
+    --shadow:
+        0 10px 35px rgba(20,25,35,.07);
+
+    --radius:16px;
+}
+
+*{
+    box-sizing:border-box;
+}
+
+html,
+body{
+    margin:0;
+    padding:0;
+    min-height:100%;
+}
+
+body{
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    color:var(--text);
+    background:var(--bg);
+}
+
+button,
+input,
+select{
+    font:inherit;
+}
+
+button{
+    -webkit-tap-highlight-color:transparent;
+}
+
+.container{
+    width:min(1180px,94%);
+    margin:auto;
+    padding:25px 0 60px;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:18px 22px;
+    margin-bottom:20px;
+
+    background:rgba(255,255,255,.92);
+
+    border:1px solid var(--border);
+    border-radius:18px;
+
+    box-shadow:var(--shadow);
+}
+
+.logo h1{
+    margin:0;
+
+    font-size:25px;
+    font-weight:800;
+    letter-spacing:-.5px;
+}
+
+.logo p{
+    margin:5px 0 0;
+
+    color:var(--muted);
+    font-size:12px;
+}
+
+.connection{
+    text-align:right;
+}
+
+.status{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+
+    padding:7px 11px;
+
+    border-radius:30px;
+
+    font-size:11px;
+    font-weight:800;
+
+    color:#777;
+    background:#f0f1f4;
+}
+
+.status.online{
+    color:#16875f;
+    background:#e9f8f1;
+}
+
+.status.offline{
+    color:#b53b40;
+    background:#fcedee;
+}
+
+
+/* =========================================================
+   GENERAL
+========================================================= */
+
+.panel{
+    background:var(--surface);
+
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+
+    box-shadow:var(--shadow);
+
+    overflow:hidden;
+}
+
+.panel-title{
+    padding:14px 17px;
+
+    border-bottom:1px solid var(--border);
+
+    font-size:13px;
+    font-weight:800;
+
+    letter-spacing:.2px;
+}
+
+.card{
+    padding:17px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1.35fr .8fr;
+    gap:18px;
+}
+
+.hidden{
+    display:none!important;
+}
+
+.notice{
+    padding:11px 13px;
+
+    color:var(--muted);
+
+    background:var(--surface2);
+
+    border:1px solid var(--border);
+    border-radius:11px;
+
+    font-size:11px;
+    line-height:1.65;
+}
+
+.small{
+    color:var(--muted);
+    font-size:10px;
+}
+
+label{
+    display:block;
+
+    margin-bottom:6px;
+
+    color:var(--muted);
+
+    font-size:11px;
+    font-weight:600;
+}
+
+input,
+select{
+    width:100%;
+
+    padding:11px 12px;
+
+    border:1px solid var(--border);
+    border-radius:10px;
+
+    outline:none;
+
+    background:#fff;
+    color:var(--text);
+
+    transition:.18s;
+}
+
+input:focus,
+select:focus{
+    border-color:#b8bfcc;
+    box-shadow:0 0 0 3px rgba(80,100,150,.07);
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.btn{
+    border:0;
+    border-radius:10px;
+
+    padding:11px 15px;
+
+    cursor:pointer;
+
+    font-weight:800;
+    font-size:12px;
+
+    transition:.18s;
+}
+
+.btn:hover{
+    transform:translateY(-1px);
+}
+
+.btn:active{
+    transform:scale(.98);
+}
+
+.btn:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+    transform:none;
+}
+
+.btn-primary{
+    color:#fff;
+    background:#17191f;
+}
+
+.btn-green{
+    color:#fff;
+    background:var(--green);
+}
+
+.btn-blue{
+    color:#fff;
+    background:var(--blue);
+}
+
+.btn-gray{
+    color:#343842;
+    background:#eef0f4;
+}
+
+.btn-red{
+    color:#fff;
+    background:var(--red);
+}
+
+.room-actions{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+}
+
+.room-actions .btn{
+    flex:1;
+}
+
+.room-code{
+    margin-top:4px;
+
+    font-size:24px;
+    font-weight:900;
+    letter-spacing:3px;
+
+    color:#17191f;
+
+    word-break:break-all;
+}
+
+
+/* =========================================================
+   PLAYER LIST
+========================================================= */
+
+.player-list{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+
+.player-row{
+    display:grid;
+    grid-template-columns:1fr auto auto;
+
+    align-items:center;
+    gap:10px;
+
+    padding:10px 11px;
+
+    background:var(--surface2);
+
+    border:1px solid var(--border);
+    border-radius:11px;
+}
+
+.player-name{
+    font-weight:800;
+    font-size:12px;
+}
+
+.player-role{
+    margin-top:3px;
+    color:var(--muted);
+    font-size:9px;
+}
+
+.money{
+    color:var(--green);
+    font-weight:900;
+    font-size:12px;
+}
+
+
+/* =========================================================
+   DRIVE BET
+========================================================= */
+
+.drive-bet{
+    margin-top:18px;
+}
+
+.bet-mode{
+    display:flex;
+    gap:6px;
+
+    margin-bottom:16px;
+
+    padding:4px;
+
+    background:#f0f1f4;
+
+    border-radius:11px;
+}
+
+.mode-btn{
+    flex:1;
+
+    padding:10px;
+
+    border:0;
+    border-radius:8px;
+
+    background:transparent;
+
+    color:var(--muted);
+
+    cursor:pointer;
+
+    font-size:11px;
+    font-weight:800;
+}
+
+.mode-btn.active{
+    background:#fff;
+    color:var(--text);
+
+    box-shadow:
+        0 2px 8px rgba(0,0,0,.07);
+}
+
+
+/* =========================================================
+   BETTING SECTION
+========================================================= */
+
+.section-label{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    margin-bottom:9px;
+}
+
+.section-label strong{
+    font-size:13px;
+}
+
+.section-label span{
+    color:var(--muted);
+    font-size:10px;
+}
+
+
+/* =========================================================
+   TRIGGER BUTTONS
+========================================================= */
+
+.trigger-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+}
+
+.trigger{
+    min-height:72px;
+
+    border:2px solid transparent;
+    border-radius:13px;
+
+    cursor:pointer;
+
+    color:#fff;
+
+    font-weight:900;
+    font-size:12px;
+
+    transition:.17s;
+
+    position:relative;
+    overflow:hidden;
+}
+
+.trigger:hover{
+    transform:translateY(-2px);
+}
+
+.trigger:active{
+    transform:scale(.98);
+}
+
+.trigger small{
+    display:block;
+
+    margin-top:4px;
+
+    opacity:.9;
+
+    font-size:9px;
+    font-weight:700;
+}
+
+.trigger.selected{
+    border-color:#17191f;
+
+    box-shadow:
+        0 0 0 3px rgba(0,0,0,.07);
+
+    transform:translateY(-2px);
+}
+
+
+/* Critical = Yellow */
+
+.t-critical{
+    color:#27200b;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffe36e,
+            #f4c430
+        );
+}
+
+
+/* Draw = Red */
+
+.t-draw{
+    background:
+        linear-gradient(
+            135deg,
+            #f65b60,
+            #d52f35
+        );
+}
+
+
+/* Front = Pink */
+
+.t-front{
+    background:
+        linear-gradient(
+            135deg,
+            #f58cbb,
+            #e15b98
+        );
+}
+
+
+/* Heal = Green */
+
+.t-heal{
+    background:
+        linear-gradient(
+            135deg,
+            #47d99b,
+            #18a66e
+        );
+}
+
+
+/* Over Trigger = Rainbow */
+
+.t-over{
+    background:
+        linear-gradient(
+            120deg,
+            #ff4f6d 0%,
+            #ff9b4a 18%,
+            #ffe45b 35%,
+            #57d878 52%,
+            #54b7ff 70%,
+            #9b6dff 86%,
+            #f06bc7 100%
+        );
+
+    background-size:200% 200%;
+
+    animation:
+        rainbowMove 4s ease infinite;
+}
+
+@keyframes rainbowMove{
+
+    0%{
+        background-position:0% 50%;
+    }
+
+    50%{
+        background-position:100% 50%;
+    }
+
+    100%{
+        background-position:0% 50%;
+    }
+
+}
+
+
+/* No Trigger */
+
+.t-none{
+    color:#343840;
+
+    background:
+        linear-gradient(
+            135deg,
+            #e5e7eb,
+            #cfd3db
+        );
+}
+
+
+/* =========================================================
+   REGULAR BET
+========================================================= */
+
+.regular-info{
+    margin-bottom:10px;
+}
+
+.regular-bet-area{
+    padding:14px;
+
+    background:var(--surface2);
+
+    border:1px solid var(--border);
+
+    border-radius:13px;
+}
+
+.regular-choice{
+    margin-top:10px;
+}
+
+
+/* =========================================================
+   STEP BET
+========================================================= */
+
+.step-area{
+    padding:14px;
+
+    background:var(--surface2);
+
+    border:1px solid var(--border);
+
+    border-radius:13px;
+}
+
+.drive-count{
+    margin-bottom:12px;
+}
+
+.steps{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:9px;
+}
+
+.step-card{
+    padding:10px;
+
+    background:#fff;
+
+    border:1px solid var(--border);
+    border-radius:11px;
+}
+
+.step-card h4{
+    margin:0 0 8px;
+
+    font-size:10px;
+    font-weight:900;
+}
+
+.step-card .trigger{
+    width:100%;
+    min-height:58px;
+    margin-bottom:6px;
+}
+
+
+/* =========================================================
+   BET MONEY
+========================================================= */
+
+.bet-money{
+    margin-top:14px;
+}
+
+.bet-input{
+    display:flex;
+    gap:6px;
+}
+
+.adjust{
+    width:43px;
+
+    border:0;
+    border-radius:9px;
+
+    background:#eef0f4;
+
+    color:#333;
+
+    cursor:pointer;
+
+    font-size:18px;
+    font-weight:900;
+}
+
+.adjust:hover{
+    background:#e2e5eb;
+}
+
+.bet-input input{
+    text-align:center;
+
+    font-size:17px;
+    font-weight:900;
+}
+
+.hot-buttons{
+    display:grid;
+    grid-template-columns:
+        repeat(7,1fr);
+
+    gap:5px;
+
+    margin-top:7px;
+}
+
+.hot-btn{
+    padding:8px 3px;
+
+    border:1px solid var(--border);
+    border-radius:8px;
+
+    background:#fff;
+
+    color:#555;
+
+    cursor:pointer;
+
+    font-size:9px;
+    font-weight:800;
+}
+
+.hot-btn:hover{
+    border-color:#b9bec9;
+    background:#f8f9fb;
+}
+
+
+/* =========================================================
+   BET SUMMARY
+========================================================= */
+
+.bet-summary{
+    margin-top:12px;
+
+    padding:11px 12px;
+
+    border-radius:10px;
+
+    background:#17191f;
+
+    color:#fff;
+
+    font-size:11px;
+    line-height:1.7;
+}
+
+.bet-summary b{
+    color:#fff;
+}
+
+
+/* =========================================================
+   HOST
+========================================================= */
+
+.host-controls{
+    margin-top:18px;
+}
+
+.host-drive{
+    display:grid;
+    grid-template-columns:
+        repeat(3,1fr);
+
+    gap:8px;
+
+    margin-top:12px;
+}
+
+.host-drive-card{
+    padding:12px;
+
+    text-align:center;
+
+    background:var(--surface2);
+
+    border:1px solid var(--border);
+
+    border-radius:11px;
+}
+
+.host-drive-card strong{
+    display:block;
+
+    margin-bottom:6px;
+
+    font-size:10px;
+}
+
+.host-drive-card.active{
+    border-color:#17191f;
+}
+
+.host-drive-card.done{
+    border-color:#32b982;
+    background:#f0fbf6;
+}
+
+.host-results{
+    margin-top:13px;
+}
+
+.result-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:7px;
+}
+
+.result-btn{
+    min-height:60px;
+
+    border:2px solid transparent;
+    border-radius:11px;
+
+    color:#fff;
+
+    cursor:pointer;
+
+    font-size:10px;
+    font-weight:900;
+
+    transition:.15s;
+}
+
+.result-btn:hover{
+    transform:translateY(-1px);
+}
+
+.result-btn.selected{
+    border-color:#17191f;
+
+    box-shadow:
+        0 0 0 3px rgba(0,0,0,.06);
+}
+
+.host-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+
+    gap:7px;
+
+    margin-top:10px;
+}
+
+
+/* =========================================================
+   ROADMAP
+========================================================= */
+
+.roadmap{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+
+    min-height:75px;
+
+    padding:14px;
+}
+
+.road{
+    width:31px;
+    height:31px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:50%;
+
+    font-size:9px;
+    font-weight:900;
+}
+
+.road-w{
+    color:#fff;
+    background:var(--green);
+}
+
+.road-l{
+    color:#fff;
+    background:var(--red);
+}
+
+.road-d{
+    color:#555;
+    background:#d9dce2;
+}
+
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+.history{
+    max-height:360px;
+    overflow:auto;
+}
+
+.history-row{
+    display:grid;
+    grid-template-columns:
+        38px 1fr auto;
+
+    align-items:center;
+
+    gap:9px;
+
+    padding:10px 3px;
+
+    border-bottom:1px solid var(--border);
+}
+
+.history-icon{
+    width:31px;
+    height:31px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:50%;
+
+    font-size:9px;
+    font-weight:900;
+}
+
+.win{
+    color:#16875f;
+    background:#e7f8f0;
+}
+
+.loss{
+    color:#b93b40;
+    background:#fceced;
+}
+
+.positive{
+    color:var(--green);
+    font-weight:900;
+}
+
+.negative{
+    color:var(--red);
+    font-weight:900;
+}
+
+
+/* =========================================================
+   LEADERBOARD
+========================================================= */
+
+.leader-row{
+    display:grid;
+    grid-template-columns:
+        28px 1fr auto;
+
+    align-items:center;
+
+    gap:7px;
+
+    padding:9px;
+
+    margin-bottom:5px;
+
+    background:var(--surface2);
+
+    border:1px solid var(--border);
+
+    border-radius:9px;
+}
+
+.rank{
+    color:#777;
+    font-weight:900;
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.modal-backdrop{
+    position:fixed;
+
+    inset:0;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:20px;
+
+    background:
+        rgba(20,23,30,.38);
+
+    backdrop-filter:
+        blur(7px);
+
+    z-index:1000;
+
+    opacity:0;
+    visibility:hidden;
+
+    transition:.2s;
+}
+
+.modal-backdrop.show{
+    opacity:1;
+    visibility:visible;
+}
+
+.modal{
+    width:min(390px,100%);
+
+    padding:23px;
+
+    background:#fff;
+
+    border:1px solid rgba(255,255,255,.7);
+
+    border-radius:18px;
+
+    box-shadow:
+        0 30px 80px rgba(0,0,0,.18);
+
+    transform:
+        translateY(10px)
+        scale(.97);
+
+    transition:.22s;
+}
+
+.modal-backdrop.show .modal{
+    transform:
+        translateY(0)
+        scale(1);
+}
+
+.modal-icon{
+    width:42px;
+    height:42px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    margin-bottom:13px;
+
+    border-radius:12px;
+
+    background:#f1f2f5;
+
+    font-size:19px;
+}
+
+.modal h3{
+    margin:0 0 7px;
+
+    font-size:17px;
+}
+
+.modal p{
+    margin:0;
+
+    color:var(--muted);
+
+    font-size:12px;
+    line-height:1.65;
+}
+
+.modal-summary{
+    margin-top:13px;
+
+    padding:11px;
+
+    border-radius:10px;
+
+    background:#f7f8fa;
+
+    font-size:11px;
+    line-height:1.7;
+}
+
+.modal-actions{
+    display:flex;
+    gap:7px;
+
+    margin-top:17px;
+}
+
+.modal-actions button{
+    flex:1;
+}
+
+
+/* =========================================================
+   CREDIT RESULT OVERLAY
+========================================================= */
+
+.credit-result{
+    position:fixed;
+
+    left:50%;
+    top:50%;
+
+    z-index:2000;
+
+    transform:
+        translate(-50%,-50%)
+        scale(.85);
+
+    opacity:0;
+    pointer-events:none;
+
+    padding:14px 22px;
+
+    border-radius:15px;
+
+    background:
+        rgba(255,255,255,.96);
+
+    border:1px solid var(--border);
+
+    box-shadow:
+        0 25px 70px rgba(0,0,0,.16);
+
+    font-size:27px;
+    font-weight:900;
+
+    letter-spacing:-.7px;
+
+    transition:
+        opacity .25s,
+        transform .35s;
+}
+
+.credit-result.show{
+    opacity:1;
+
+    transform:
+        translate(-50%,-50%)
+        scale(1);
+
+    animation:
+        creditPop 1.8s ease forwards;
+}
+
+.credit-result.plus{
+    color:var(--green);
+}
+
+.credit-result.minus{
+    color:var(--red);
+}
+
+@keyframes creditPop{
+
+    0%{
+        opacity:0;
+        transform:
+            translate(-50%,-50%)
+            scale(.75);
+    }
+
+    18%{
+        opacity:1;
+        transform:
+            translate(-50%,-50%)
+            scale(1.06);
+    }
+
+    35%{
+        transform:
+            translate(-50%,-50%)
+            scale(1);
+    }
+
+    75%{
+        opacity:1;
+    }
+
+    100%{
+        opacity:0;
+        transform:
+            translate(-50%,-58%)
+            scale(1);
+    }
+
+}
+
+
+/* =========================================================
+   EMPTY
+========================================================= */
+
+.empty{
+    padding:25px;
+
+    color:#9aa0ac;
+
+    text-align:center;
+
+    font-size:11px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:900px){
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+@media(max-width:700px){
+
+    .header{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .connection{
+        text-align:left;
+    }
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .trigger-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .steps{
+        grid-template-columns:1fr;
+    }
+
+    .result-grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .hot-buttons{
+        grid-template-columns:repeat(4,1fr);
+    }
+
+    .host-drive{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+<!-- ======================================================
+     HEADER
+====================================================== -->
+
+<header class="header">
+
+    <div class="logo">
+
+        <h1>
+            Vanguard Trigger Battle
+        </h1>
+
+        <p>
+            Multiplayer • Drive Bet • Manual Host
+        </p>
+
+    </div>
+
+    <div class="connection">
+
+        <div id="connectionStatus"
+             class="status offline">
+
+            ● Not Connected
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- ======================================================
+     ROOM
+====================================================== -->
+
+<section class="panel">
+
+    <div class="panel-title">
+        Room
+    </div>
+
+    <div class="card">
+
+        <div class="form-grid">
+
+            <div>
+
+                <label>
+                    Player Name
+                </label>
+
+                <input
+                    id="playerName"
+                    maxlength="20"
+                    placeholder="เช่น Player01">
+
+            </div>
+
+
+            <div>
+
+                <label>
+                    Starting Credit
+                </label>
+
+                <input
+                    id="startingMoney"
+                    type="number"
+                    min="100"
+                    step="100"
+                    value="10000">
+
+            </div>
+
+        </div>
+
+
+        <div class="room-actions">
+
+            <button
+                class="btn btn-primary"
+                onclick="createRoom()">
+
+                Create Room
+
+            </button>
+
+
+            <button
+                class="btn btn-blue"
+                onclick="showJoin()">
+
+                Join Room
+
+            </button>
+
+        </div>
+
+
+        <div
+            id="joinBox"
+            class="hidden"
+            style="margin-top:12px">
+
+            <label>
+                Room ID
+            </label>
+
+            <input
+                id="roomId"
+                placeholder="ใส่ Room ID ของ Host">
+
+
+            <button
+                class="btn btn-green"
+                style="width:100%;margin-top:7px"
+                onclick="joinRoom()">
+
+                Join
+
+            </button>
+
+        </div>
+
+
+        <div
+            id="roomInfo"
+            class="hidden notice"
+            style="margin-top:12px">
+
+            Room ID
+
+            <div
+                id="roomCode"
+                class="room-code">
+            </div>
+
+
+            <button
+                class="btn btn-gray"
+                style="margin-top:9px"
+                onclick="copyRoom()">
+
+                Copy Room ID
+
+            </button>
+
+        </div>
+
+
+        <div
+            id="systemMessage"
+            class="notice"
+            style="margin-top:12px">
+
+            ยังไม่ได้สร้างหรือเข้าร่วมห้อง
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<div
+    class="grid"
+    style="margin-top:18px">
+
+
+<main>
+
+
+<!-- ======================================================
+     PLAYERS
+====================================================== -->
+
+<section class="panel">
+
+    <div class="panel-title">
+        Players
+    </div>
+
+    <div class="card">
+
+        <div
+            id="playerList"
+            class="player-list">
+
+            <div class="empty">
+                ยังไม่มีผู้เล่น
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================================
+     DRIVE BET
+====================================================== -->
+
+<section class="panel drive-bet">
+
+    <div class="panel-title">
+        Drive Bet
+    </div>
+
+    <div class="card">
+
+
+        <!-- MODE -->
+
+        <div class="bet-mode">
+
+            <button
+                id="regularModeBtn"
+                class="mode-btn active"
+                onclick="switchBetMode('regular')">
+
+                Regular Bet
+
+            </button>
+
+
+            <button
+                id="stepModeBtn"
+                class="mode-btn"
+                onclick="switchBetMode('step')">
+
+                Step Bet
+
+            </button>
+
+        </div>
+
+
+        <!-- ==================================================
+             REGULAR BET
+        ================================================== -->
+
+        <div id="regularArea">
+
+            <div class="regular-info">
+
+                <div class="section-label">
+
+                    <strong>
+                        Regular Bet
+                    </strong>
+
+                    <span>
+                        เลือก 1 Trigger
+                    </span>
+
+                </div>
+
+                <div class="notice">
+
+                    เลือก Trigger เพียง 1 รายการ
+                    สำหรับรอบนี้
+                    <br>
+
+                    หาก Trigger ที่เลือกปรากฏในผล
+                    2–3 Drive อย่างน้อย 1 ครั้ง
+                    ถือว่าชนะ
+
+                    <br><br>
+
+                    <b>
+                        No Trigger
+                    </b>
+                    จะชนะเฉพาะกรณีที่ผลจริง
+                    ทุก Drive เป็น No Trigger
+
+                </div>
+
+            </div>
+
+
+            <div
+                id="regularButtons"
+                class="trigger-grid regular-choice">
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             STEP BET
+        ================================================== -->
+
+        <div
+            id="stepArea"
+            class="hidden">
+
+            <div class="section-label">
+
+                <strong>
+                    Step Bet
+                </strong>
+
+                <span>
+                    ต้องถูกครบทุก Drive
+                </span>
+
+            </div>
+
+
+            <div class="step-area">
+
+                <div class="drive-count">
+
+                    <label>
+                        จำนวน Drive
+                    </label>
+
+                    <select
+                        id="driveCount"
+                        onchange="changeDriveCount()">
+
+                        <option value="2">
+                            2 Drive
+                        </option>
+
+                        <option value="3">
+                            3 Drive
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div
+                    id="stepContainer"
+                    class="steps">
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             MONEY
+        ================================================== -->
+
+        <div class="bet-money">
+
+            <div class="section-label">
+
+                <strong>
+                    Bet Amount
+                </strong>
+
+                <span>
+                    ขั้นต่ำ 100 Credit
+                </span>
+
+            </div>
+
+
+            <div class="bet-input">
+
+                <button
+                    class="adjust"
+                    onclick="adjustBet(-100)">
+
+                    −
+
+                </button>
+
+
+                <input
+                    id="betAmount"
+                    type="number"
+                    min="100"
+                    step="100"
+                    value="100">
+
+
+                <button
+                    class="adjust"
+                    onclick="adjustBet(100)">
+
+                    +
+
+                </button>
+
+            </div>
+
+
+            <div class="hot-buttons">
+
+                <button
+                    class="hot-btn"
+                    onclick="setHotBet(100)">
+                    100
+                </button>
+
+                <button
+                    class="hot-btn"
+                    onclick="setHotBet(500)">
+                    500
+                </button>
+
+                <button
+                    class="hot-btn"
+                    onclick="setHotBet(1000)">
+                    1,000
+                </button>
+
+                <button
+                    class="hot-btn"
+                    onclick="setHotBet(2000)">
+                    2,000
+                </button>
+
+                <button
+                    class="hot-btn"
+                    onclick="setHotBet('quarter')">
+                    1/4
+                </button>
+
+                <button
+                    class="hot-btn"
+                    onclick="setHotBet('half')">
+                    1/2
+                </button>
+
+                <button
+                    class="hot-btn"
+                    onclick="setHotBet('all')">
+                    ALL IN
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             SUMMARY
+        ================================================== -->
+
+        <div
+            id="betSummary"
+            class="bet-summary">
+
+            กรุณาเลือกเดิมพัน
+
+        </div>
+
+
+        <button
+            id="confirmBtn"
+            class="btn btn-primary"
+            style="width:100%;margin-top:10px"
+            onclick="openConfirmModal()">
+
+            Confirm
+
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================================
+     HOST BETTING INPUT
+====================================================== -->
+
+<section
+    id="hostPanel"
+    class="panel host-controls hidden">
+
+    <div class="panel-title">
+        Host Betting Input
+    </div>
+
+    <div class="card">
+
+        <div class="notice">
+
+            Host เป็นผู้กำหนดผลจริงของแต่ละ Drive
+
+            <br>
+
+            ผลที่ Host กำหนดจะถูกนำไปคำนวณ
+            ทั้ง Regular Bet และ Step Bet
+
+        </div>
+
+
+        <div
+            id="hostDriveStatus"
+            class="host-drive">
+        </div>
+
+
+        <div class="host-results">
+
+            <div class="section-label">
+
+                <strong>
+                    Drive Result
+                </strong>
+
+                <span>
+                    Manual Input
+                </span>
+
+            </div>
+
+
+            <div
+                id="resultButtons"
+                class="result-grid">
+            </div>
+
+        </div>
+
+
+        <div class="host-actions">
+
+            <button
+                class="btn btn-green"
+                onclick="confirmDriveResult()">
+
+                Confirm Drive
+
+            </button>
+
+
+            <button
+                class="btn btn-primary"
+                onclick="settleRound()">
+
+                Settle Round
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================================
+     ROADMAP
+====================================================== -->
+
+<section
+    class="panel"
+    style="margin-top:18px">
+
+    <div class="panel-title">
+        Roadmap
+    </div>
+
+    <div
+        id="roadmap"
+        class="roadmap">
+
+        <div class="empty">
+            ยังไม่มีผล
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ======================================================
+     HISTORY
+====================================================== -->
+
+<section
+    class="panel"
+    style="margin-top:18px">
+
+    <div class="panel-title">
+        Round History
+    </div>
+
+    <div
+        id="history"
+        class="card history">
+
+        <div class="empty">
+            ยังไม่มีประวัติ
+        </div>
+
+    </div>
+
+</section>
+
+
+</main>
+
+
+<!-- ======================================================
+     SIDE
+====================================================== -->
+
+<aside>
+
+
+<section class="panel">
+
+    <div class="panel-title">
+        Current Round
+    </div>
+
+    <div class="card">
+
+        <div
+            id="roundInfo"
+            class="notice">
+
+            รอการเดิมพัน
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- PAYTABLE -->
+
+<section
+    class="panel"
+    style="margin-top:18px">
+
+    <div class="panel-title">
+        Paytable
+    </div>
+
+    <div class="card">
+
+
+        <div class="leader-row">
+
+            <div>●</div>
+
+            <div>
+                <b>Critical</b>
+
+                <div class="small">
+                    +100%
+                </div>
+            </div>
+
+            <strong>
+                1x
+            </strong>
+
+        </div>
+
+
+        <div class="leader-row">
+
+            <div>●</div>
+
+            <div>
+                <b>Draw</b>
+
+                <div class="small">
+                    +200%
+                </div>
+            </div>
+
+            <strong>
+                2x
+            </strong>
+
+        </div>
+
+
+        <div class="leader-row">
+
+            <div>●</div>
+
+            <div>
+                <b>Front</b>
+
+                <div class="small">
+                    +200%
+                </div>
+            </div>
+
+            <strong>
+                2x
+            </strong>
+
+        </div>
+
+
+        <div class="leader-row">
+
+            <div>●</div>
+
+            <div>
+                <b>Heal</b>
+
+                <div class="small">
+                    +300%
+                </div>
+            </div>
+
+            <strong>
+                3x
+            </strong>
+
+        </div>
+
+
+        <div class="leader-row">
+
+            <div>●</div>
+
+            <div>
+                <b>Over Trigger</b>
+
+                <div class="small">
+                    +800%
+                </div>
+            </div>
+
+            <strong>
+                8x
+            </strong>
+
+        </div>
+
+
+        <div class="leader-row">
+
+            <div>●</div>
+
+            <div>
+                <b>No Trigger</b>
+
+                <div class="small">
+                    2 Drive +80%
+                    <br>
+                    3 Drive +400%
+                </div>
+            </div>
+
+            <strong>
+                Special
+            </strong>
+
+        </div>
+
+
+        <div class="notice"
+             style="margin-top:10px">
+
+            <b>
+                Step Bonus
+            </b>
+
+            <br><br>
+
+            1 Step =
+            Base %
+
+            <br>
+
+            2 Step =
+            Base + 300% ของ Base
+
+            <br>
+
+            3 Step =
+            Base + 600% ของ Base
+
+            <br><br>
+
+            เช่น Critical:
+
+            <br>
+
+            1 Step = +100%
+
+            <br>
+
+            2 Step = +400%
+
+            <br>
+
+            3 Step = +700%
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- LEADERBOARD -->
+
+<section
+    class="panel"
+    style="margin-top:18px">
+
+    <div class="panel-title">
+        Leaderboard
+    </div>
+
+    <div
+        id="leaderboard"
+        class="card">
+
+        <div class="empty">
+            ยังไม่มีผู้เล่น
+        </div>
+
+    </div>
+
+</section>
+
+</aside>
+
+</div>
+
+</div>
+
+
+<!-- ======================================================
+     CONFIRM MODAL
+====================================================== -->
+
+<div
+    id="confirmModal"
+    class="modal-backdrop">
+
+    <div class="modal">
+
+        <div class="modal-icon">
+            ✓
+        </div>
+
+        <h3>
+            Confirm Bet
+        </h3>
+
+        <p>
+            หากยืนยันการเดิมพันแล้ว
+            จะไม่สามารถแก้ไขการเดิมพันได้
+        </p>
+
+
+        <div
+            id="modalSummary"
+            class="modal-summary">
+        </div>
+
+
+        <div class="modal-actions">
+
+            <button
+                class="btn btn-gray"
+                onclick="closeConfirmModal()">
+
+                Cancel
+
+            </button>
+
+
+            <button
+                class="btn btn-primary"
+                onclick="finalConfirmBet()">
+
+                Confirm Bet
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ======================================================
+     CREDIT RESULT
+====================================================== -->
+
+<div
+    id="creditResult"
+    class="credit-result">
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   CONFIG
+========================================================= */
+
+const MIN_BET = 100;
+const BET_STEP = 100;
+
+const TRIGGERS = {
+
+    Critical:{
+        emoji:"●",
+        basePercent:100,
+        className:"t-critical",
+        label:"+100%"
+    },
+
+    Draw:{
+        emoji:"●",
+        basePercent:200,
+        className:"t-draw",
+        label:"+200%"
+    },
+
+    Front:{
+        emoji:"●",
+        basePercent:200,
+        className:"t-front",
+        label:"+200%"
+    },
+
+    Heal:{
+        emoji:"●",
+        basePercent:300,
+        className:"t-heal",
+        label:"+300%"
+    },
+
+    "Over Trigger":{
+        emoji:"✦",
+        basePercent:800,
+        className:"t-over",
+        label:"+800%"
+    },
+
+    "No Trigger":{
+        emoji:"○",
+        basePercent:0,
+        className:"t-none",
+        label:"2D +80% / 3D +400%"
+    }
+
+};
+
+const TRIGGER_NAMES =
+    Object.keys(TRIGGERS);
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let peer = null;
+
+let hostConnection = null;
+
+let isHost = false;
+
+let myId = "";
+
+let myName = "";
+
+let roomId = "";
+
+let players = {};
+
+let connections = {};
+
+let driveCount = 2;
+
+let betMode = "regular";
+
+let regularChoice = null;
+
+let selectedSteps = [
+    null,
+    null,
+    null
+];
+
+let currentRound = {
+
+    round:1,
+
+    bets:{},
+
+    results:[],
+
+    currentDrive:0,
+
+    settled:false
+
+};
+
+let roadmap = [];
+
+let history = [];
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function $(id){
+    return document.getElementById(id);
+}
+
+
+function money(number){
+
+    return Number(number)
+        .toLocaleString("en-US");
+
+}
+
+
+function normalizeBet(value){
+
+    value = Number(value);
+
+    if(
+        !Number.isFinite(value) ||
+        value < MIN_BET
+    ){
+
+        return MIN_BET;
+
+    }
+
+    value =
+        Math.floor(
+            value / BET_STEP
+        ) * BET_STEP;
+
+    return Math.max(
+        MIN_BET,
+        value
+    );
+
+}
+
+
+function setMessage(message){
+
+    $("systemMessage")
+        .textContent = message;
+
+}
+
+
+function escapeHTML(text){
+
+    return String(text)
+
+        .replace(/&/g,"&amp;")
+
+        .replace(/</g,"&lt;")
+
+        .replace(/>/g,"&gt;")
+
+        .replace(/"/g,"&quot;")
+
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================================================
+   BET MODE
+========================================================= */
+
+function switchBetMode(mode){
+
+    if(
+        currentRound.bets &&
+        currentRound.bets[myId]
+    ){
+
+        alert(
+            "การเดิมพันรอบนี้ถูก Confirm แล้ว"
+        );
+
+        return;
+
+    }
+
+    betMode = mode;
+
+
+    $("regularModeBtn")
+        .classList.toggle(
+            "active",
+            mode === "regular"
+        );
+
+
+    $("stepModeBtn")
+        .classList.toggle(
+            "active",
+            mode === "step"
+        );
+
+
+    $("regularArea")
+        .classList.toggle(
+            "hidden",
+            mode !== "regular"
+        );
+
+
+    $("stepArea")
+        .classList.toggle(
+            "hidden",
+            mode !== "step"
+        );
+
+
+    updateBetSummary();
+
+}
+
+
+/* =========================================================
+   CREATE ROOM
+========================================================= */
+
+function createRoom(){
+
+    const name =
+        $("playerName")
+            .value
+            .trim() ||
+        "Host";
+
+
+    const startingMoney =
+        normalizeBet(
+            $("startingMoney")
+                .value
+        );
+
+
+    myName = name;
+
+    isHost = true;
+
+
+    setMessage(
+        "กำลังสร้างห้อง..."
+    );
+
+
+    peer = new Peer();
+
+
+    peer.on("open",id=>{
+
+        myId = id;
+
+        roomId = id;
+
+
+        players = {};
+
+
+        players[myId] = {
+
+            id:myId,
+
+            name:myName,
+
+            wallet:startingMoney,
+
+            host:true,
+
+            connected:true,
+
+            bet:null
+
+        };
+
+
+        $("roomInfo")
+            .classList.remove(
+                "hidden"
+            );
+
+
+        $("roomCode")
+            .textContent = roomId;
+
+
+        $("hostPanel")
+            .classList.remove(
+                "hidden"
+            );
+
+
+        $("connectionStatus")
+            .textContent =
+            "● HOST ONLINE";
+
+
+        $("connectionStatus")
+            .className =
+            "status online";
+
+
+        setMessage(
+            "สร้างห้องสำเร็จ"
+        );
+
+
+        updateUI();
+
+    });
+
+
+    peer.on("connection",conn=>{
+
+        connections[conn.peer] =
+            conn;
+
+
+        conn.on("data",data=>{
+
+            handleHostMessage(
+                conn,
+                data
+            );
+
+        });
+
+
+        conn.on("close",()=>{
+
+            if(
+                players[conn.peer]
+            ){
+
+                players[conn.peer]
+                    .connected = false;
+
+                broadcastState();
+
+                updateUI();
+
+            }
+
+        });
+
+    });
+
+
+    peer.on("error",error=>{
+
+        console.error(error);
+
+        setMessage(
+            "เกิดข้อผิดพลาด: " +
+            error.type
+        );
+
+    });
+
+}
+
+
+/* =========================================================
+   JOIN
+========================================================= */
+
+function showJoin(){
+
+    $("joinBox")
+        .classList.remove(
+            "hidden"
+        );
+
+}
+
+
+function joinRoom(){
+
+    const target =
+        $("roomId")
+            .value
+            .trim();
+
+
+    const name =
+        $("playerName")
+            .value
+            .trim();
+
+
+    const startingMoney =
+        normalizeBet(
+            $("startingMoney")
+                .value
+        );
+
+
+    if(!target){
+
+        alert(
+            "กรุณาใส่ Room ID"
+        );
+
+        return;
+
+    }
+
+
+    if(!name){
+
+        alert(
+            "กรุณาใส่ชื่อ"
+        );
+
+        return;
+
+    }
+
+
+    myName = name;
+
+    isHost = false;
+
+
+    setMessage(
+        "กำลังเชื่อมต่อ Host..."
+    );
+
+
+    peer = new Peer();
+
+
+    peer.on("open",id=>{
+
+        myId = id;
+
+
+        hostConnection =
+            peer.connect(
+                target,
+                {
+                    reliable:true
+                }
+            );
+
+
+        hostConnection.on(
+            "open",
+            ()=>{
+
+                hostConnection.send({
+
+                    type:"join",
+
+                    player:{
+
+                        id:myId,
+
+                        name:myName,
+
+                        wallet:
+                            startingMoney,
+
+                        host:false,
+
+                        connected:true,
+
+                        bet:null
+
+                    }
+
+                });
+
+
+                $("connectionStatus")
+                    .textContent =
+                    "● CONNECTED";
+
+
+                $("connectionStatus")
+                    .className =
+                    "status online";
+
+
+                setMessage(
+                    "เข้าร่วมห้องสำเร็จ"
+                );
+
+            }
+        );
+
+
+        hostConnection.on(
+            "data",
+            data=>{
+
+                handleGuestMessage(
+                    data
+                );
+
+            }
+        );
+
+
+        hostConnection.on(
+            "close",
+            ()=>{
+
+                $("connectionStatus")
+                    .textContent =
+                    "● CONNECTION LOST";
+
+
+                $("connectionStatus")
+                    .className =
+                    "status offline";
+
+
+                setMessage(
+                    "การเชื่อมต่อถูกตัด"
+                );
+
+            }
+        );
+
+    });
+
+
+    peer.on("error",error=>{
+
+        setMessage(
+            "เชื่อมต่อไม่สำเร็จ: " +
+            error.type
+        );
+
+    });
+
+}
+
+
+/* =========================================================
+   HOST MESSAGE
+========================================================= */
+
+function handleHostMessage(
+    conn,
+    data
+){
+
+    if(
+        !data ||
+        !data.type
+    ){
+        return;
+    }
+
+
+    if(data.type === "join"){
+
+        players[
+            data.player.id
+        ] = {
+
+            ...data.player,
+
+            connected:true
+
+        };
+
+
+        connections[
+            data.player.id
+        ] = conn;
+
+
+        broadcastState();
+
+        updateUI();
+
+        return;
+
+    }
+
+
+    if(data.type === "bet"){
+
+        const player =
+            players[conn.peer];
+
+
+        if(!player)
+            return;
+
+
+        if(
+            currentRound.bets[
+                conn.peer
+            ]
+        ){
+
+            return;
+
+        }
+
+
+        const amount =
+            normalizeBet(
+                data.amount
+            );
+
+
+        if(
+            amount >
+            player.wallet
+        ){
+
+            return;
+
+        }
+
+
+        if(
+            data.mode !==
+            "regular" &&
+            data.mode !==
+            "step"
+        ){
+
+            return;
+
+        }
+
+
+        let bet;
+
+
+        if(data.mode === "regular"){
+
+            if(
+                !TRIGGERS[
+                    data.choice
+                ]
+            ){
+
+                return;
+
+            }
+
+
+            bet = {
+
+                mode:"regular",
+
+                amount:amount,
+
+                choice:
+                    data.choice
+
+            };
+
+        }else{
+
+            const steps =
+                data.steps
+                    .slice(
+                        0,
+                        driveCount
+                    );
+
+
+            if(
+                steps.length !==
+                driveCount
+            ){
+
+                return;
+
+            }
+
+
+            if(
+                steps.some(
+                    x =>
+                        !TRIGGERS[x]
+                )
+            ){
+
+                return;
+
+            }
+
+
+            bet = {
+
+                mode:"step",
+
+                amount:amount,
+
+                steps:steps
+
+            };
+
+        }
+
+
+        currentRound.bets[
+            conn.peer
+        ] = bet;
+
+
+        player.bet = bet;
+
+
+        broadcastState();
+
+        updateUI();
+
+        return;
+
+    }
+
+}
+
+
+/* =========================================================
+   GUEST MESSAGE
+========================================================= */
+
+function handleGuestMessage(data){
+
+    if(!data)
+        return;
+
+
+    if(
+        data.type === "state"
+    ){
+
+        players =
+            data.players;
+
+        currentRound =
+            data.round;
+
+        roadmap =
+            data.roadmap || [];
+
+        history =
+            data.history || [];
+
+
+        updateUI();
+
+        return;
+
+    }
+
+}
+
+
+/* =========================================================
+   BROADCAST
+========================================================= */
+
+function broadcastState(){
+
+    const packet = {
+
+        type:"state",
+
+        players:players,
+
+        round:currentRound,
+
+        roadmap:roadmap,
+
+        history:history
+
+    };
+
+
+    Object.values(
+        connections
+    ).forEach(conn=>{
+
+        if(
+            conn &&
+            conn.open
+        ){
+
+            conn.send(packet);
+
+        }
+
+    });
+
+}
+
+
+/* =========================================================
+   REGULAR BUTTONS
+========================================================= */
+
+function renderRegularButtons(){
+
+    const box =
+        $("regularButtons");
+
+
+    box.innerHTML = "";
+
+
+    TRIGGER_NAMES.forEach(name=>{
+
+        const trigger =
+            TRIGGERS[name];
+
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+
+        button.className =
+            "trigger " +
+            trigger.className;
+
+
+        if(
+            regularChoice === name
+        ){
+
+            button.classList.add(
+                "selected"
+            );
+
+        }
+
+
+        button.innerHTML = `
+
+            ${trigger.emoji}
+            ${name}
+
+            <small>
+                ${trigger.label}
+            </small>
+
+        `;
+
+
+        button.onclick = ()=>{
+
+            regularChoice =
+                name;
+
+            renderRegularButtons();
+
+            updateBetSummary();
+
+        };
+
+
+        box.appendChild(button);
+
+    });
+
+}
+
+
+/* =========================================================
+   STEP COUNT
+========================================================= */
+
+function changeDriveCount(){
+
+    driveCount =
+        Number(
+            $("driveCount")
+                .value
+        );
+
+
+    selectedSteps = [
+        null,
+        null,
+        null
+    ];
+
+
+    renderSteps();
+
+    updateBetSummary();
+
+}
+
+
+/* =========================================================
+   STEP BUTTONS
+========================================================= */
+
+function renderSteps(){
+
+    const box =
+        $("stepContainer");
+
+
+    box.innerHTML = "";
+
+
+    for(
+        let i=0;
+        i<driveCount;
+        i++
+    ){
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+
+        card.className =
+            "step-card";
+
+
+        card.innerHTML = `
+
+            <h4>
+                DRIVE ${i+1}
+            </h4>
+
+            <div
+                id="stepButtons${i}"
+                class="trigger-grid"
+                style="grid-template-columns:1fr 1fr">
+
+            </div>
+
+        `;
+
+
+        box.appendChild(card);
+
+
+        renderStepButtons(i);
+
+    }
+
+}
+
+
+function renderStepButtons(step){
+
+    const box =
+        $("stepButtons"+step);
+
+
+    box.innerHTML = "";
+
+
+    TRIGGER_NAMES.forEach(name=>{
+
+        const trigger =
+            TRIGGERS[name];
+
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+
+        button.className =
+            "trigger " +
+            trigger.className;
+
+
+        if(
+            selectedSteps[step] === name
+        ){
+
+            button.classList.add(
+                "selected"
+            );
+
+        }
+
+
+        button.innerHTML = `
+
+            ${trigger.emoji}
+            ${name}
+
+            <small>
+                ${trigger.label}
+            </small>
+
+        `;
+
+
+        button.onclick = ()=>{
+
+            selectedSteps[step] =
+                name;
+
+            renderSteps();
+
+            updateBetSummary();
+
+        };
+
+
+        box.appendChild(button);
+
+    });
+
+}
+
+
+/* =========================================================
+   BET SUMMARY
+========================================================= */
+
+function updateBetSummary(){
+
+    const amount =
+        normalizeBet(
+            $("betAmount")
+                .value
+        );
+
+
+    let html = "";
+
+
+    if(
+        betMode ===
+        "regular"
+    ){
+
+        html += `
+            <b>Regular Bet</b>
+            <br>
+        `;
+
+
+        if(regularChoice){
+
+            html += `
+
+                ${TRIGGERS[
+                    regularChoice
+                ].emoji}
+
+                ${regularChoice}
+
+                <b>
+                    ${TRIGGERS[
+                        regularChoice
+                    ].label}
+                </b>
+
+            `;
+
+        }else{
+
+            html +=
+                "ยังไม่ได้เลือก Trigger";
+
+        }
+
+    }else{
+
+        html += `
+            <b>Step Bet</b>
+            <br>
+        `;
+
+
+        for(
+            let i=0;
+            i<driveCount;
+            i++
+        ){
+
+            if(
+                selectedSteps[i]
+            ){
+
+                html += `
+
+                    Drive ${i+1}:
+
+                    ${TRIGGERS[
+                        selectedSteps[i]
+                    ].emoji}
+
+                    ${selectedSteps[i]}
+
+                    <b>
+                        ${TRIGGERS[
+                            selectedSteps[i]
+                        ].label}
+                    </b>
+
+                    <br>
+
+                `;
+
+            }else{
+
+                html += `
+
+                    Drive ${i+1}:
+                    ยังไม่เลือก
+                    <br>
+
+                `;
+
+            }
+
+        }
+
+    }
+
+
+    html += `
+
+        <hr
+            style="
+            border:0;
+            border-top:1px solid #34363d;
+            margin:8px 0">
+
+        เดิมพัน:
+        <b>
+            ${money(amount)}
+        </b>
+        Credit
+
+    `;
+
+
+    $("betSummary")
+        .innerHTML = html;
+
+}
+
+
+/* =========================================================
+   BET AMOUNT
+========================================================= */
+
+function adjustBet(delta){
+
+    const player =
+        players[myId];
+
+
+    const wallet =
+        player
+            ? player.wallet
+            : 0;
+
+
+    let amount =
+        Number(
+            $("betAmount")
+                .value
+        ) || MIN_BET;
+
+
+    amount += delta;
+
+
+    amount =
+        Math.max(
+            MIN_BET,
+            amount
+        );
+
+
+    if(
+        wallet &&
+        amount > wallet
+    ){
+
+        amount = wallet;
+
+    }
+
+
+    amount =
+        Math.floor(
+            amount /
+            BET_STEP
+        ) * BET_STEP;
+
+
+    if(amount < MIN_BET)
+        amount = MIN_BET;
+
+
+    $("betAmount")
+        .value = amount;
+
+
+    updateBetSummary();
+
+}
+
+
+function setHotBet(type){
+
+    const player =
+        players[myId];
+
+
+    if(!player){
+
+        alert(
+            "กรุณาเข้าห้องก่อน"
+        );
+
+        return;
+
+    }
+
+
+    const wallet =
+        player.wallet;
+
+
+    let amount;
+
+
+    if(
+        type === "quarter"
+    ){
+
+        amount =
+            Math.floor(
+                wallet * .25 /
+                BET_STEP
+            ) * BET_STEP;
+
+    }
+
+    else if(
+        type === "half"
+    ){
+
+        amount =
+            Math.floor(
+                wallet * .5 /
+                BET_STEP
+            ) * BET_STEP;
+
+    }
+
+    else if(
+        type === "all"
+    ){
+
+        amount =
+            Math.floor(
+                wallet /
+                BET_STEP
+            ) * BET_STEP;
+
+    }
+
+    else{
+
+        amount =
+            Number(type);
+
+    }
+
+
+    amount =
+        Math.min(
+            amount,
+            wallet
+        );
+
+
+    amount =
+        Math.floor(
+            amount /
+            BET_STEP
+        ) * BET_STEP;
+
+
+    if(
+        amount < MIN_BET
+    ){
+
+        amount =
+            MIN_BET;
+
+    }
+
+
+    $("betAmount")
+        .value = amount;
+
+
+    updateBetSummary();
+
+}
+
+
+/* =========================================================
+   OPEN CONFIRM MODAL
+========================================================= */
+
+function openConfirmModal(){
+
+    if(!peer){
+
+        alert(
+            "กรุณาเข้าหรือสร้างห้องก่อน"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        currentRound.bets &&
+        currentRound.bets[myId]
+    ){
+
+        alert(
+            "การเดิมพันรอบนี้ถูก Confirm แล้ว"
+        );
+
+        return;
+
+    }
+
+
+    const player =
+        players[myId];
+
+
+    if(!player){
+
+        alert(
+            "ไม่พบข้อมูลผู้เล่น"
+        );
+
+        return;
+
+    }
+
+
+    const amount =
+        normalizeBet(
+            $("betAmount")
+                .value
+        );
+
+
+    if(
+        amount >
+        player.wallet
+    ){
+
+        alert(
+            "เครดิตไม่เพียงพอ"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        betMode ===
+        "regular"
+    ){
+
+        if(!regularChoice){
+
+            alert(
+                "กรุณาเลือก Trigger"
+            );
+
+            return;
+
+        }
+
+    }else{
+
+        for(
+            let i=0;
+            i<driveCount;
+            i++
+        ){
+
+            if(
+                !selectedSteps[i]
+            ){
+
+                alert(
+                    "กรุณาเลือก Trigger ให้ครบทุก Drive"
+                );
+
+                return;
+
+            }
+
+        }
+
+    }
+
+
+    $("modalSummary")
+        .innerHTML = `
+
+        <b>
+            ${betMode === "regular"
+                ? "Regular Bet"
+                : "Step Bet"}
+        </b>
+
+        <br>
+
+        ${
+            betMode === "regular"
+
+            ?
+
+            `
+            Trigger:
+            <b>
+                ${regularChoice}
+            </b>
+            `
+
+            :
+
+            selectedSteps
+                .slice(
+                    0,
+                    driveCount
+                )
+                .map(
+                    (x,i)=>
+                        `Drive ${i+1}:
+                         <b>${x}</b>`
+                )
+                .join("<br>")
+        }
+
+        <br>
+
+        เดิมพัน:
+        <b>
+            ${money(amount)}
+            Credit
+        </b>
+
+    `;
+
+
+    $("confirmModal")
+        .classList.add("show");
+
+}
+
+
+/* =========================================================
+   CLOSE MODAL
+========================================================= */
+
+function closeConfirmModal(){
+
+    $("confirmModal")
+        .classList.remove(
+            "show"
+        );
+
+}
+
+
+/* =========================================================
+   FINAL CONFIRM
+========================================================= */
+
+function finalConfirmBet(){
+
+    const player =
+        players[myId];
+
+
+    if(!player){
+
+        closeConfirmModal();
+
+        return;
+
+    }
+
+
+    const amount =
+        normalizeBet(
+            $("betAmount")
+                .value
+        );
+
+
+    let bet;
+
+
+    if(
+        betMode ===
+        "regular"
+    ){
+
+        bet = {
+
+            mode:"regular",
+
+            amount:amount,
+
+            choice:
+                regularChoice
+
+        };
+
+    }else{
+
+        bet = {
+
+            mode:"step",
+
+            amount:amount,
+
+            steps:
+                selectedSteps
+                    .slice(
+                        0,
+                        driveCount
+                    )
+
+        };
+
+    }
+
+
+    closeConfirmModal();
+
+
+    if(isHost){
+
+        currentRound.bets[myId] =
+            bet;
+
+        players[myId].bet =
+            bet;
+
+
+        broadcastState();
+
+        updateUI();
+
+
+        $("confirmBtn")
+            .disabled = true;
+
+
+        setMessage(
+            "ยืนยันการเดิมพันแล้ว"
+        );
+
+
+    }else{
+
+        hostConnection.send({
+
+            type:"bet",
+
+            mode:bet.mode,
+
+            amount:bet.amount,
+
+            choice:bet.choice,
+
+            steps:bet.steps || []
+
+        });
+
+
+        $("confirmBtn")
+            .disabled = true;
+
+
+        setMessage(
+            "Confirm สำเร็จ • ล็อกการเดิมพันแล้ว"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   HOST DRIVE RESULT
+========================================================= */
+
+function renderHostDriveStatus(){
+
+    const box =
+        $("hostDriveStatus");
+
+
+    box.innerHTML = "";
+
+
+    for(
+        let i=0;
+        i<driveCount;
+        i++
+    ){
+
+        const result =
+            currentRound.results[i];
+
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+
+        card.className =
+            "host-drive-card";
+
+
+        if(
+            i ===
+            currentRound.currentDrive
+        ){
+
+            card.classList.add(
+                "active"
+            );
+
+        }
+
+
+        if(result){
+
+            card.classList.add(
+                "done"
+            );
+
+        }
+
+
+        card.innerHTML = `
+
+            <strong>
+                DRIVE ${i+1}
+            </strong>
+
+            ${
+                result
+                    ? result
+                    : "Waiting"
+            }
+
+        `;
+
+
+        box.appendChild(card);
+
+    }
+
+}
+
+
+/* =========================================================
+   HOST RESULT BUTTONS
+========================================================= */
+
+function renderResultButtons(){
+
+    const box =
+        $("resultButtons");
+
+
+    box.innerHTML = "";
+
+
+    TRIGGER_NAMES.forEach(name=>{
+
+        const trigger =
+            TRIGGERS[name];
+
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+
+        button.className =
+            "result-btn " +
+            trigger.className;
+
+
+        if(
+            currentRound.results[
+                currentRound.currentDrive
+            ] === name
+        ){
+
+            button.classList.add(
+                "selected"
+            );
+
+        }
+
+
+        button.innerHTML = `
+
+            ${trigger.emoji}
+            <br>
+            ${name}
+
+        `;
+
+
+        button.onclick = ()=>{
+
+            currentRound.results[
+                currentRound.currentDrive
+            ] = name;
+
+
+            renderHostDriveStatus();
+
+            renderResultButtons();
+
+        };
+
+
+        box.appendChild(button);
+
+    });
+
+}
+
+
+/* =========================================================
+   CONFIRM DRIVE
+========================================================= */
+
+function confirmDriveResult(){
+
+    if(!isHost)
+        return;
+
+
+    const index =
+        currentRound.currentDrive;
+
+
+    if(
+        !currentRound.results[index]
+    ){
+
+        alert(
+            "กรุณาเลือกผล Drive นี้ก่อน"
+        );
+
+        return;
+
+    }
+
+
+    if(
+        index <
+        driveCount - 1
+    ){
+
+        currentRound.currentDrive++;
+
+        renderHostDriveStatus();
+
+        renderResultButtons();
+
+        broadcastState();
+
+    }else{
+
+        alert(
+            "กำหนดผลครบทุก Drive แล้ว"
+        );
+
+        broadcastState();
+
+    }
+
+}
+
+
+/* =========================================================
+   PAYOUT
+========================================================= */
+
+function calculateRegularPayout(
+    betAmount,
+    choice,
+    results
+){
+
+    /*
+       No Trigger:
+       ต้องเป็น No Trigger ทุก Drive
+    */
+
+    if(
+        choice ===
+        "No Trigger"
+    ){
+
+        const allNoTrigger =
+            results.every(
+                result =>
+                    result ===
+                    "No Trigger"
+            );
+
+
+        if(!allNoTrigger){
+
+            return {
+
+                win:false,
+
+                profit:
+                    -betAmount
+
+            };
+
+        }
+
+
+        const percent =
+            results.length === 2
+                ? 80
+                : 400;
+
+
+        return {
+
+            win:true,
+
+            profit:
+                Math.floor(
+                    betAmount *
+                    percent /
+                    100
+                )
+
+        };
+
+    }
+
+
+    /*
+       Regular Trigger:
+       ถ้าปรากฏอย่างน้อย 1 Drive
+    */
+
+    const found =
+        results.includes(choice);
+
+
+    if(!found){
+
+        return {
+
+            win:false,
+
+            profit:
+                -betAmount
+
+        };
+
+    }
+
+
+    const percent =
+        TRIGGERS[
+            choice
+        ].basePercent;
+
+
+    return {
+
+        win:true,
+
+        profit:
+            Math.floor(
+                betAmount *
+                percent /
+                100
+            )
+
+    };
+
+}
+
+
+/* =========================================================
+   STEP PAYOUT
+========================================================= */
+
+function calculateStepPayout(
+    betAmount,
+    steps,
+    results
+){
+
+    let correct = 0;
+
+
+    for(
+        let i=0;
+        i<results.length;
+        i++
+    ){
+
+        if(
+            steps[i] ===
+            results[i]
+        ){
+
+            correct++;
+
+        }
+
+    }
+
+
+    /*
+       ต้องถูกครบทุก Drive
+    */
+
+    if(
+        correct !==
+        results.length
+    ){
+
+        return {
+
+            win:false,
+
+            profit:
+                -betAmount
+
+        };
+
+    }
+
+
+    /*
+       No Trigger Step
+    */
+
+    if(
+        steps[0] ===
+        "No Trigger"
+    ){
+
+        const allNoTrigger =
+            results.every(
+                x =>
+                    x ===
+                    "No Trigger"
+            );
+
+
+        if(!allNoTrigger){
+
+            return {
+
+                win:false,
+
+                profit:
+                    -betAmount
+
+            };
+
+        }
+
+
+        const percent =
+            results.length === 2
+                ? 80
+                : 400;
+
+
+        return {
+
+            win:true,
+
+            profit:
+                Math.floor(
+                    betAmount *
+                    percent /
+                    100
+                )
+
+        };
+
+    }
+
+
+    /*
+       Step Bonus
+
+       1 Step:
+       Base
+
+       2 Step:
+       Base + 300% Base
+
+       3 Step:
+       Base + 600% Base
+    */
+
+    const firstTrigger =
+        steps[0];
+
+
+    const base =
+        TRIGGERS[
+            firstTrigger
+        ].basePercent;
+
+
+    const multiplier =
+        1 +
+        (
+            (results.length - 1)
+            * 3
+        );
+
+
+    return {
+
+        win:true,
+
+        profit:
+            Math.floor(
+                betAmount *
+                (base / 100) *
+                multiplier
+            )
+
+    };
+
+}
+
+
+/* =========================================================
+   SETTLE ROUND
+========================================================= */
+
+function settleRound(){
+
+    if(!isHost)
+        return;
+
+
+    for(
+        let i=0;
+        i<driveCount;
+        i++
+    ){
+
+        if(
+            !currentRound.results[i]
+        ){
+
+            alert(
+                "กรุณากำหนดผลให้ครบทุก Drive"
+            );
+
+            return;
+
+        }
+
+    }
+
+
+    const roundResults = {};
+
+
+    Object.entries(
+        currentRound.bets
+    ).forEach(
+        ([id,bet])=>{
+
+            const player =
+                players[id];
+
+
+            if(!player)
+                return;
+
+
+            let payout;
+
+
+            if(
+                bet.mode ===
+                "regular"
+            ){
+
+                payout =
+                    calculateRegularPayout(
+
+                        bet.amount,
+
+                        bet.choice,
+
+                        currentRound.results
+
+                    );
+
+            }else{
+
+                payout =
+                    calculateStepPayout(
+
+                        bet.amount,
+
+                        bet.steps,
+
+                        currentRound.results
+
+                    );
+
+            }
+
+
+            /*
+               หักเดิมพันก่อน
+            */
+
+            player.wallet -=
+                bet.amount;
+
+
+            /*
+               ชนะ:
+               คืนเดิมพัน + กำไร
+            */
+
+            if(payout.win){
+
+                player.wallet +=
+                    bet.amount +
+                    payout.profit;
+
+            }
+
+
+            roundResults[id] = {
+
+                id:id,
+
+                name:player.name,
+
+                mode:bet.mode,
+
+                bet:bet.amount,
+
+                choice:
+                    bet.choice ||
+                    null,
+
+                steps:
+                    bet.steps ||
+                    null,
+
+                win:payout.win,
+
+                profit:payout.profit,
+
+                wallet:player.wallet
+
+            };
+
+        }
+    );
+
+
+    /*
+       Roadmap
+    */
+
+    const winnerCount =
+        Object.values(
+            roundResults
+        ).filter(
+            result =>
+                result.win
+        ).length;
+
+
+    roadmap.push(
+        winnerCount > 0
+            ? "W"
+            : "L"
+    );
+
+
+    /*
+       History
+    */
+
+    history.unshift({
+
+        round:
+            currentRound.round,
+
+        drives:
+            currentRound.results
+                .slice(),
+
+        results:
+            roundResults,
+
+        timestamp:
+            new Date()
+                .toLocaleTimeString()
+
+    });
+
+
+    /*
+       Show credit animation
+       to every player
+    */
+
+    Object.entries(
+        roundResults
+    ).forEach(
+        ([id,result])=>{
+
+            sendCreditResult(
+                id,
+                result.profit
+            );
+
+        }
+    );
+
+
+    /*
+       Reset round
+    */
+
+    currentRound = {
+
+        round:
+            currentRound.round + 1,
+
+        bets:{},
+
+        results:[],
+
+        currentDrive:0,
+
+        settled:false
+
+    };
+
+
+    Object.values(
+        players
+    ).forEach(player=>{
+
+        player.bet = null;
+
+    });
+
+
+    broadcastState();
+
+    updateUI();
+
+
+    setTimeout(
+        ()=>{
+
+            if(winnerCount > 0){
+
+                setMessage(
+                    "ปิดรอบแล้ว • มีผู้ชนะ"
+                );
+
+            }else{
+
+                setMessage(
+                    "ปิดรอบแล้ว • ไม่มีผู้ชนะ"
+                );
+
+            }
+
+        },
+        300
+    );
+
+}
+
+
+/* =========================================================
+   CREDIT RESULT
+========================================================= */
+
+function sendCreditResult(
+    playerId,
+    profit
+){
+
+    /*
+       Host เห็นของตัวเอง
+    */
+
+    if(
+        playerId ===
+        myId
+    ){
+
+        showCreditResult(
+            profit
+        );
+
+        return;
+
+    }
+
+
+    /*
+       ส่งไป Player
+    */
+
+    const conn =
+        connections[playerId];
+
+
+    if(
+        conn &&
+        conn.open
+    ){
+
+        conn.send({
+
+            type:"creditResult",
+
+            amount:profit
+
+        });
+
+    }
+
+}
+
+
+function showCreditResult(
+    amount
+){
+
+    const box =
+        $("creditResult");
+
+
+    const positive =
+        amount >= 0;
+
+
+    box.className =
+        "credit-result " +
+        (
+            positive
+                ? "plus"
+                : "minus"
+        );
+
+
+    box.textContent =
+        (
+            positive
+                ? "+"
+                : ""
+        ) +
+        money(amount) +
+        " Credit";
+
+
+    /*
+       Force reflow
+    */
+
+    void box.offsetWidth;
+
+
+    box.classList.add(
+        "show"
+    );
+
+
+    setTimeout(
+        ()=>{
+
+            box.classList.remove(
+                "show"
+            );
+
+        },
+        1900
+    );
+
+}
+
+
+/* =========================================================
+   GUEST CREDIT MESSAGE
+========================================================= */
+
+function processGuestMessage(data){
+
+    if(
+        data.type ===
+        "creditResult"
+    ){
+
+        showCreditResult(
+            data.amount
+        );
+
+        return true;
+
+    }
+
+    return false;
+
+}
+
+
+/* =========================================================
+   PLAYER LIST
+========================================================= */
+
+function renderPlayers(){
+
+    const box =
+        $("playerList");
+
+
+    const list =
+        Object.values(
+            players
+        );
+
+
+    if(!list.length){
+
+        box.innerHTML =
+            `
+            <div class="empty">
+                ยังไม่มีผู้เล่น
+            </div>
+            `;
+
+        return;
+
+    }
+
+
+    box.innerHTML = "";
+
+
+    list.forEach(player=>{
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+
+        row.className =
+            "player-row";
+
+
+        row.innerHTML = `
+
+            <div>
+
+                <div class="player-name">
+
+                    ${escapeHTML(
+                        player.name
+                    )}
+
+                </div>
+
+                <div class="player-role">
+
+                    ${
+                        player.host
+                            ? "HOST"
+                            : "PLAYER"
+                    }
+
+                    •
+
+                    ${
+                        player.connected
+                            ? "Online"
+                            : "Offline"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="money">
+
+                ${money(
+                    player.wallet
+                )}
+
+            </div>
+
+
+            <div>
+
+                ${
+                    player.bet
+                        ? "LOCKED"
+                        : "—"
+                }
+
+            </div>
+
+        `;
+
+
+        box.appendChild(row);
+
+    });
+
+}
+
+
+/* =========================================================
+   LEADERBOARD
+========================================================= */
+
+function renderLeaderboard(){
+
+    const box =
+        $("leaderboard");
+
+
+    const list =
+        Object.values(
+            players
+        )
+        .sort(
+            (a,b)=>
+                b.wallet -
+                a.wallet
+        );
+
+
+    if(!list.length){
+
+        box.innerHTML =
+            `
+            <div class="empty">
+                ยังไม่มีผู้เล่น
+            </div>
+            `;
+
+        return;
+
+    }
+
+
+    box.innerHTML = "";
+
+
+    list.forEach(
+        (player,index)=>{
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "leader-row";
+
+
+            row.innerHTML = `
+
+                <div class="rank">
+
+                    #${index+1}
+
+                </div>
+
+
+                <div>
+
+                    <b>
+                        ${escapeHTML(
+                            player.name
+                        )}
+                    </b>
+
+                    <div class="small">
+
+                        ${
+                            player.host
+                                ? "HOST"
+                                : "PLAYER"
+                        }
+
+                    </div>
+
+                </div>
+
+
+                <strong
+                    class="money">
+
+                    ${money(
+                        player.wallet
+                    )}
+
+                </strong>
+
+            `;
+
+
+            box.appendChild(row);
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   ROADMAP
+========================================================= */
+
+function renderRoadmap(){
+
+    const box =
+        $("roadmap");
+
+
+    if(!roadmap.length){
+
+        box.innerHTML =
+            `
+            <div class="empty">
+                ยังไม่มีผล
+            </div>
+            `;
+
+        return;
+
+    }
+
+
+    box.innerHTML = "";
+
+
+    roadmap.forEach(result=>{
+
+        const item =
+            document.createElement(
+                "div"
+            );
+
+
+        item.className =
+            "road " +
+            (
+                result === "W"
+                    ? "road-w"
+                    : result === "L"
+                        ? "road-l"
+                        : "road-d"
+            );
+
+
+        item.textContent =
+            result;
+
+
+        box.appendChild(item);
+
+    });
+
+}
+
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+function renderHistory(){
+
+    const box =
+        $("history");
+
+
+    if(!history.length){
+
+        box.innerHTML =
+            `
+            <div class="empty">
+                ยังไม่มีประวัติ
+            </div>
+            `;
+
+        return;
+
+    }
+
+
+    box.innerHTML = "";
+
+
+    history.forEach(round=>{
+
+        Object.values(
+            round.results
+        ).forEach(result=>{
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "history-row";
+
+
+            row.innerHTML = `
+
+                <div
+                    class="
+                        history-icon
+                        ${
+                            result.win
+                                ? "win"
+                                : "loss"
+                        }
+                    ">
+
+                    ${
+                        result.win
+                            ? "W"
+                            : "L"
+                    }
+
+                </div>
+
+
+                <div>
+
+                    <b>
+
+                        Round #${round.round}
+
+                        •
+
+                        ${escapeHTML(
+                            result.name
+                        )}
+
+                    </b>
+
+
+                    <div class="small">
+
+                        ${
+                            result.mode ===
+                            "regular"
+
+                            ?
+
+                            `Regular:
+                             ${result.choice}`
+
+                            :
+
+                            `Step:
+                             ${result.steps.join(
+                                " → "
+                             )}`
+
+                        }
+
+                        <br>
+
+                        Result:
+
+                        ${round.drives.join(
+                            " → "
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="${
+                        result.profit >= 0
+                            ? "positive"
+                            : "negative"
+                    }">
+
+                    ${
+                        result.profit >= 0
+                            ? "+"
+                            : ""
+                    }
+
+                    ${money(
+                        result.profit
+                    )}
+
+                </div>
+
+            `;
+
+
+            box.appendChild(row);
+
+        });
+
+    });
+
+}
+
+
+/* =========================================================
+   ROUND INFO
+========================================================= */
+
+function renderRoundInfo(){
+
+    const box =
+        $("roundInfo");
+
+
+    const betCount =
+        Object.keys(
+            currentRound.bets ||
+            {}
+        ).length;
+
+
+    const playerCount =
+        Object.keys(
+            players
+        ).length;
+
+
+    box.innerHTML = `
+
+        <b>
+            Round #${currentRound.round}
+        </b>
+
+        <br>
+
+        Drives:
+        ${driveCount}
+
+        <br>
+
+        Confirmed:
+        ${betCount}/${playerCount}
+
+    `;
+
+}
+
+
+/* =========================================================
+   UPDATE UI
+========================================================= */
+
+function updateUI(){
+
+    renderPlayers();
+
+    renderLeaderboard();
+
+    renderRoadmap();
+
+    renderHistory();
+
+    renderRoundInfo();
+
+
+    renderRegularButtons();
+
+
+    if(
+        betMode ===
+        "step"
+    ){
+
+        renderSteps();
+
+    }
+
+
+    if(isHost){
+
+        $("hostPanel")
+            .classList.remove(
+                "hidden"
+            );
+
+
+        renderHostDriveStatus();
+
+        renderResultButtons();
+
+    }
+
+
+    /*
+       Unlock Confirm for new round
+    */
+
+    const alreadyBet =
+        currentRound.bets &&
+        currentRound.bets[myId];
+
+
+    $("confirmBtn")
+        .disabled =
+            !!alreadyBet;
+
+
+    updateBetSummary();
+
+}
+
+
+/* =========================================================
+   COPY ROOM
+========================================================= */
+
+function copyRoom(){
+
+    if(!roomId)
+        return;
+
+
+    navigator.clipboard
+        .writeText(roomId)
+        .then(()=>{
+
+            setMessage(
+                "คัดลอก Room ID แล้ว"
+            );
+
+        });
+
+}
+
+
+/* =========================================================
+   BET INPUT
+========================================================= */
+
+$("betAmount")
+    .addEventListener(
+        "input",
+        ()=>{
+
+            let amount =
+                Number(
+                    $("betAmount")
+                        .value
+                );
+
+
+            if(
+                !Number.isFinite(amount)
+            ){
+
+                amount =
+                    MIN_BET;
+
+            }
+
+
+            amount =
+                Math.floor(
+                    amount /
+                    BET_STEP
+                ) * BET_STEP;
+
+
+            if(
+                amount < MIN_BET
+            ){
+
+                amount =
+                    MIN_BET;
+
+            }
+
+
+            const player =
+                players[myId];
+
+
+            if(
+                player &&
+                amount >
+                player.wallet
+            ){
+
+                amount =
+                    Math.floor(
+                        player.wallet /
+                        BET_STEP
+                    ) * BET_STEP;
+
+            }
+
+
+            $("betAmount")
+                .value =
+                amount;
+
+
+            updateBetSummary();
+
+        }
+    );
+
+
+/* =========================================================
+   OVERRIDE GUEST MESSAGE HANDLER
+========================================================= */
+
+const originalGuestHandler =
+    handleGuestMessage;
+
+
+handleGuestMessage =
+    function(data){
+
+        if(
+            processGuestMessage(data)
+        ){
+
+            return;
+
+        }
+
+
+        originalGuestHandler(
+            data
+        );
+
+    };
+
+
+/* =========================================================
+   MODAL CLICK OUTSIDE
+========================================================= */
+
+$("confirmModal")
+    .addEventListener(
+        "click",
+        event=>{
+
+            if(
+                event.target ===
+                $("confirmModal")
+            ){
+
+                closeConfirmModal();
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+renderRegularButtons();
+
+renderSteps();
+
+updateUI();
+
+</script>
+
+</body>
+</html>
