@@ -1,0 +1,3302 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Vanguard Trigger Battle - Multiplayer</title>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    min-height:100vh;
+    font-family:Arial,"Segoe UI",sans-serif;
+    color:#fff;
+    background:
+        radial-gradient(circle at top,#303d75 0%,#11152c 45%,#070914 100%);
+}
+
+button,input,select{font:inherit}
+
+.container{
+    width:min(1250px,95%);
+    margin:auto;
+    padding:20px 0 50px;
+}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    padding:20px;
+    margin-bottom:20px;
+    border-radius:20px;
+    background:rgba(12,16,38,.85);
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 15px 50px rgba(0,0,0,.3);
+}
+
+.logo h1{
+    margin:0;
+    color:#ffd84d;
+    font-size:clamp(22px,4vw,34px);
+}
+
+.logo p{
+    margin:5px 0 0;
+    color:#9da8ce;
+    font-size:13px;
+}
+
+.connection{text-align:right}
+
+.status{
+    padding:7px 12px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+    background:#28304d;
+}
+
+.status.online{
+    color:#63f0a7;
+    background:rgba(42,211,132,.12);
+}
+
+.status.offline{
+    color:#ff687e;
+    background:rgba(255,60,90,.12);
+}
+
+.panel{
+    background:rgba(12,16,38,.82);
+    border:1px solid rgba(255,255,255,.11);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 15px 45px rgba(0,0,0,.25);
+}
+
+.panel-title{
+    padding:14px 17px;
+    font-weight:900;
+    background:rgba(255,255,255,.04);
+    border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1.35fr .9fr;
+    gap:20px;
+}
+
+.card{padding:18px}
+
+input,select{
+    width:100%;
+    padding:12px;
+    color:#fff;
+    background:#171d3a;
+    border:1px solid #343d68;
+    border-radius:10px;
+    outline:none;
+}
+
+label{
+    display:block;
+    color:#98a3c9;
+    font-size:12px;
+    margin-bottom:6px;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.btn{
+    border:0;
+    border-radius:11px;
+    padding:12px 16px;
+    color:#fff;
+    cursor:pointer;
+    font-weight:800;
+    transition:.2s;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+    filter:brightness(1.1);
+}
+
+.btn:disabled{
+    opacity:.4;
+    cursor:not-allowed;
+    transform:none;
+}
+
+.btn-primary{
+    background:linear-gradient(135deg,#ffd84d,#ff9f20);
+    color:#18120a;
+}
+
+.btn-blue{background:#2869e6}
+.btn-green{background:#15965d}
+.btn-red{background:#c72e4b}
+.btn-gray{background:#303855}
+
+.hidden{display:none!important}
+
+.notice{
+    margin-top:12px;
+    padding:10px 12px;
+    border-radius:10px;
+    background:rgba(255,255,255,.045);
+    color:#9fa9ca;
+    font-size:12px;
+    line-height:1.6;
+}
+
+.room-actions{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+}
+
+.room-actions .btn{flex:1}
+
+.room-code{
+    font-size:25px;
+    font-weight:900;
+    letter-spacing:3px;
+    color:#ffd84d;
+    word-break:break-all;
+}
+
+/* PLAYERS */
+
+.player-list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.player-row{
+    display:grid;
+    grid-template-columns:1fr auto auto;
+    gap:10px;
+    align-items:center;
+    padding:11px;
+    border-radius:10px;
+    background:rgba(255,255,255,.045);
+}
+
+.player-name{font-weight:800}
+
+.player-role{
+    color:#8994b8;
+    font-size:11px;
+}
+
+.money{
+    color:#5ff0a7;
+    font-weight:900;
+}
+
+/* BETTING */
+
+.bet-section{margin-top:20px}
+
+.trigger-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+}
+
+.trigger{
+    min-height:80px;
+    border:2px solid transparent;
+    border-radius:12px;
+    color:#fff;
+    cursor:pointer;
+    font-weight:900;
+    transition:.15s;
+}
+
+.trigger:hover{
+    filter:brightness(1.12);
+    transform:translateY(-2px);
+}
+
+.trigger small{
+    display:block;
+    opacity:.9;
+    font-size:11px;
+    margin-top:5px;
+}
+
+.trigger.selected{
+    border-color:#fff;
+    box-shadow:0 0 0 3px rgba(255,255,255,.15);
+    transform:translateY(-2px);
+}
+
+.t-critical{
+    background:linear-gradient(145deg,#ed3d5a,#8b152a);
+}
+
+.t-draw{
+    background:linear-gradient(145deg,#3989ff,#174ba0);
+}
+
+.t-front{
+    background:linear-gradient(145deg,#a34df0,#542097);
+}
+
+.t-heal{
+    background:linear-gradient(145deg,#37d98b,#087346);
+}
+
+.t-over{
+    background:linear-gradient(145deg,#ff9c3e,#a94300);
+}
+
+.t-none{
+    background:linear-gradient(145deg,#7c849b,#42485c);
+}
+
+.step-box{
+    margin-top:15px;
+    padding:14px;
+    background:rgba(255,255,255,.035);
+    border-radius:12px;
+}
+
+.steps{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    margin-top:10px;
+}
+
+.step-card{
+    padding:10px;
+    border-radius:10px;
+    background:#151a34;
+    border:1px solid #2e365e;
+}
+
+.step-card h4{
+    margin:0 0 8px;
+    color:#ffd84d;
+}
+
+.step-card .trigger{
+    width:100%;
+    min-height:62px;
+    margin-bottom:6px;
+}
+
+.bet-input-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:15px;
+}
+
+.bet-input-wrap{
+    display:flex;
+    gap:6px;
+    align-items:stretch;
+}
+
+.bet-input-wrap input{
+    flex:1;
+    min-width:0;
+    text-align:center;
+    font-size:18px;
+    font-weight:900;
+}
+
+.adjust-btn{
+    width:46px;
+    border:0;
+    border-radius:9px;
+    background:#303855;
+    color:#fff;
+    cursor:pointer;
+    font-size:20px;
+    font-weight:900;
+}
+
+.adjust-btn:hover{
+    background:#414b70;
+}
+
+.hot-buttons{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
+    margin-top:8px;
+}
+
+.hot-btn{
+    padding:9px 4px;
+    border:1px solid #394367;
+    background:#202744;
+    color:#fff;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:11px;
+    font-weight:800;
+}
+
+.hot-btn:hover{
+    background:#344064;
+    border-color:#6070a0;
+}
+
+.bet-summary{
+    margin-top:12px;
+    padding:12px;
+    border-radius:10px;
+    background:rgba(0,0,0,.2);
+    line-height:1.7;
+    font-size:13px;
+}
+
+/* HOST */
+
+.host-controls{
+    margin-top:20px;
+}
+
+.result-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:8px;
+}
+
+.result-btn{
+    min-height:65px;
+    padding:10px 5px;
+    border:2px solid transparent;
+    border-radius:10px;
+    cursor:pointer;
+    color:#fff;
+    font-weight:900;
+}
+
+.result-btn:hover{
+    filter:brightness(1.12);
+}
+
+.result-btn.selected{
+    border-color:#fff;
+    box-shadow:0 0 0 3px rgba(255,255,255,.12);
+}
+
+.drive-status{
+    margin-top:15px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+}
+
+.drive{
+    padding:12px;
+    border-radius:10px;
+    text-align:center;
+    background:#171c38;
+    border:1px solid #30385e;
+}
+
+.drive strong{
+    display:block;
+    color:#ffd84d;
+    margin-bottom:7px;
+}
+
+.drive.done{
+    border-color:#36d98a;
+    background:rgba(54,217,138,.08);
+}
+
+.drive.current{
+    border-color:#ffcf4d;
+}
+
+.resolve-box{
+    margin-top:15px;
+    padding:15px;
+    border-radius:12px;
+    background:rgba(255,255,255,.035);
+}
+
+.resolve-title{
+    font-weight:900;
+    margin-bottom:10px;
+}
+
+/* ROADMAP */
+
+.roadmap{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    padding:15px;
+    min-height:80px;
+    background:
+        linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size:25px 25px;
+}
+
+.road{
+    width:31px;
+    height:31px;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:900;
+    font-size:11px;
+}
+
+.road-w{background:#1fc77a}
+.road-l{background:#e93655}
+.road-d{background:#7b849e}
+
+/* HISTORY */
+
+.history{
+    max-height:350px;
+    overflow:auto;
+}
+
+.history-row{
+    display:grid;
+    grid-template-columns:55px 1fr auto;
+    gap:10px;
+    padding:11px 5px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    font-size:12px;
+}
+
+.history-icon{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:900;
+}
+
+.win{
+    background:rgba(43,215,135,.15);
+    color:#57eba0;
+}
+
+.loss{
+    background:rgba(255,59,89,.15);
+    color:#ff6479;
+}
+
+.positive{
+    color:#58eba0;
+    font-weight:900;
+}
+
+.negative{
+    color:#ff6479;
+    font-weight:900;
+}
+
+/* LEADERBOARD */
+
+.leader-row{
+    display:grid;
+    grid-template-columns:35px 1fr auto;
+    gap:8px;
+    padding:9px;
+    border-radius:8px;
+    background:rgba(255,255,255,.04);
+    margin-bottom:6px;
+}
+
+.rank{
+    color:#ffd84d;
+    font-weight:900;
+}
+
+.small{
+    color:#7f89aa;
+    font-size:11px;
+}
+
+.empty{
+    padding:25px;
+    text-align:center;
+    color:#717c9d;
+    font-size:12px;
+}
+
+@media(max-width:900px){
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .result-grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+}
+
+@media(max-width:700px){
+    .header{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .connection{text-align:left}
+
+    .form-grid,
+    .bet-input-row{
+        grid-template-columns:1fr;
+    }
+
+    .trigger-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .steps{
+        grid-template-columns:1fr;
+    }
+
+    .hot-buttons{
+        grid-template-columns:repeat(4,1fr);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header class="header">
+
+    <div class="logo">
+        <h1>⚔ Vanguard Trigger Battle</h1>
+        <p>Multiplayer • Manual Result • Step Betting</p>
+    </div>
+
+    <div class="connection">
+        <div id="connectionStatus"
+             class="status offline">
+            ● ยังไม่ได้เชื่อมต่อ
+        </div>
+    </div>
+
+</header>
+
+
+<!-- ROOM -->
+
+<section class="panel">
+
+    <div class="panel-title">
+        🌐 ห้อง Multiplayer
+    </div>
+
+    <div class="card">
+
+        <div class="form-grid">
+
+            <div>
+                <label>ชื่อผู้เล่น</label>
+
+                <input id="playerName"
+                       maxlength="20"
+                       placeholder="เช่น Player01">
+            </div>
+
+            <div>
+                <label>เงินเริ่มต้น</label>
+
+                <input id="startingMoney"
+                       type="number"
+                       min="100"
+                       step="100"
+                       value="10000">
+            </div>
+
+        </div>
+
+        <div class="room-actions">
+
+            <button class="btn btn-primary"
+                    onclick="createRoom()">
+                👑 สร้างห้อง
+            </button>
+
+            <button class="btn btn-blue"
+                    onclick="showJoin()">
+                🚪 เข้าร่วมห้อง
+            </button>
+
+        </div>
+
+
+        <div id="joinBox"
+             class="hidden"
+             style="margin-top:15px">
+
+            <label>Room ID ของ Host</label>
+
+            <input id="roomId"
+                   placeholder="ใส่ Room ID">
+
+            <button class="btn btn-green"
+                    style="margin-top:8px;width:100%"
+                    onclick="joinRoom()">
+                🔗 JOIN ROOM
+            </button>
+
+        </div>
+
+
+        <div id="roomInfo"
+             class="hidden notice">
+
+            <div>ROOM ID</div>
+
+            <div id="roomCode"
+                 class="room-code">
+            </div>
+
+            <div style="margin-top:6px">
+                ส่ง Room ID นี้ให้ผู้เล่นคนอื่น
+            </div>
+
+            <button class="btn btn-gray"
+                    style="margin-top:8px"
+                    onclick="copyRoom()">
+                📋 Copy Room ID
+            </button>
+
+        </div>
+
+
+        <div id="systemMessage"
+             class="notice">
+            ยังไม่ได้สร้างหรือเข้าร่วมห้อง
+        </div>
+
+    </div>
+</section>
+
+
+<div class="grid"
+     style="margin-top:20px">
+
+<main>
+
+<!-- PLAYERS -->
+
+<section class="panel">
+
+    <div class="panel-title">
+        👥 PLAYERS
+    </div>
+
+    <div class="card">
+
+        <div id="playerList"
+             class="player-list">
+
+            <div class="empty">
+                ยังไม่มีผู้เล่น
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- STEP BETTING -->
+
+<section class="panel bet-section">
+
+    <div class="panel-title">
+        🎯 STEP BETTING
+    </div>
+
+    <div class="card">
+
+        <label>จำนวน Drive</label>
+
+        <select id="driveCount"
+                onchange="changeDriveCount()">
+
+            <option value="2">
+                2 Drive
+            </option>
+
+            <option value="3">
+                3 Drive
+            </option>
+
+        </select>
+
+
+        <div class="step-box">
+
+            <div class="small">
+                เลือก Trigger ที่ต้องการทาย
+                ในแต่ละ Drive
+            </div>
+
+            <div id="stepContainer"
+                 class="steps">
+            </div>
+
+        </div>
+
+
+        <!-- BET -->
+
+        <div style="margin-top:15px">
+
+            <label>
+                เงินเดิมพัน
+                <span style="color:#ffd84d">
+                    (ขั้นต่ำ 100 เครดิต)
+                </span>
+            </label>
+
+            <div class="bet-input-wrap">
+
+                <button class="adjust-btn"
+                        onclick="adjustBet(-100)">
+                    −
+                </button>
+
+                <input id="betAmount"
+                       type="number"
+                       min="100"
+                       step="100"
+                       value="100">
+
+                <button class="adjust-btn"
+                        onclick="adjustBet(100)">
+                    +
+                </button>
+
+            </div>
+
+
+            <div class="hot-buttons">
+
+                <button class="hot-btn"
+                        onclick="setHotBet(100)">
+                    100
+                </button>
+
+                <button class="hot-btn"
+                        onclick="setHotBet(500)">
+                    500
+                </button>
+
+                <button class="hot-btn"
+                        onclick="setHotBet(1000)">
+                    1,000
+                </button>
+
+                <button class="hot-btn"
+                        onclick="setHotBet(2000)">
+                    2,000
+                </button>
+
+                <button class="hot-btn"
+                        onclick="setHotBet('quarter')">
+                    1/4
+                </button>
+
+                <button class="hot-btn"
+                        onclick="setHotBet('half')">
+                    1/2
+                </button>
+
+                <button class="hot-btn"
+                        onclick="setHotBet('all')">
+                    ALL IN
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div id="betSummary"
+             class="bet-summary">
+            เลือก Trigger ให้ครบทุก Step
+        </div>
+
+
+        <button id="submitBetBtn"
+                class="btn btn-primary"
+                style="width:100%;margin-top:12px"
+                onclick="submitBet()">
+
+            🎯 ยืนยันการเดิมพัน
+
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- HOST CONTROL -->
+
+<section id="hostPanel"
+         class="panel host-controls hidden">
+
+    <div class="panel-title">
+        👑 HOST MANUAL RESULT CONTROL
+    </div>
+
+    <div class="card">
+
+        <div class="notice">
+
+            Host เป็นผู้กำหนดผลจริงของแต่ละ Drive
+            <br>
+            สามารถเลือก Trigger หรือ
+            <b style="color:#ddd">
+                No Trigger
+            </b>
+            ได้
+
+        </div>
+
+
+        <div class="drive-status"
+             id="driveStatus">
+        </div>
+
+
+        <div class="resolve-box">
+
+            <div class="resolve-title">
+                ผลจริง Drive ปัจจุบัน
+            </div>
+
+            <div id="resultButtons"
+                 class="result-grid">
+            </div>
+
+        </div>
+
+
+        <button class="btn btn-green"
+                style="width:100%;margin-top:12px"
+                onclick="confirmDriveResult()">
+
+            ✅ ยืนยันผล Drive นี้
+
+        </button>
+
+
+        <button class="btn btn-primary"
+                style="width:100%;margin-top:8px"
+                onclick="settleRound()">
+
+            🏆 ปิดรอบและคำนวณเงิน
+
+        </button>
+
+    </div>
+</section>
+
+
+<!-- ROADMAP -->
+
+<section class="panel"
+         style="margin-top:20px">
+
+    <div class="panel-title">
+        🛣️ ROADMAP
+    </div>
+
+    <div id="roadmap"
+         class="roadmap">
+
+        <div class="empty">
+            ยังไม่มีผล
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- HISTORY -->
+
+<section class="panel"
+         style="margin-top:20px">
+
+    <div class="panel-title">
+        📜 ประวัติรอบ
+    </div>
+
+    <div class="card history"
+         id="history">
+
+        <div class="empty">
+            ยังไม่มีประวัติ
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<aside>
+
+<!-- ROUND -->
+
+<section class="panel">
+
+    <div class="panel-title">
+        📌 รอบปัจจุบัน
+    </div>
+
+    <div class="card">
+
+        <div id="roundInfo"
+             class="notice">
+            รอการเดิมพัน
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- PAYTABLE -->
+
+<section class="panel"
+         style="margin-top:20px">
+
+    <div class="panel-title">
+        💰 PAYTABLE
+    </div>
+
+    <div class="card">
+
+        <div class="leader-row">
+            <div>🔴</div>
+            <div>
+                <b>Critical</b>
+                <div class="small">
+                    +100%
+                </div>
+            </div>
+            <strong>1x</strong>
+        </div>
+
+        <div class="leader-row">
+            <div>🔵</div>
+            <div>
+                <b>Draw</b>
+                <div class="small">
+                    +200%
+                </div>
+            </div>
+            <strong>2x</strong>
+        </div>
+
+        <div class="leader-row">
+            <div>🟣</div>
+            <div>
+                <b>Front</b>
+                <div class="small">
+                    +200%
+                </div>
+            </div>
+            <strong>2x</strong>
+        </div>
+
+        <div class="leader-row">
+            <div>🟢</div>
+            <div>
+                <b>Heal</b>
+                <div class="small">
+                    +300%
+                </div>
+            </div>
+            <strong>3x</strong>
+        </div>
+
+        <div class="leader-row">
+            <div>🟠</div>
+            <div>
+                <b>Over Trigger</b>
+                <div class="small">
+                    +800%
+                </div>
+            </div>
+            <strong>8x</strong>
+        </div>
+
+        <div class="leader-row">
+            <div>⚪</div>
+            <div>
+                <b>No Trigger</b>
+                <div class="small">
+                    2 Drive +80%
+                    <br>
+                    3 Drive +400%
+                </div>
+            </div>
+            <strong>Special</strong>
+        </div>
+
+
+        <div class="notice">
+
+            <b>Step Bonus</b>
+
+            <br><br>
+
+            Trigger ปกติ:
+
+            <br>
+            1 Step =
+            Base
+
+            <br>
+            2 Step =
+            Base + 300% ของ Base
+
+            <br>
+            3 Step =
+            Base + 600% ของ Base
+
+            <br><br>
+
+            <b>No Trigger</b>
+
+            <br>
+            2 Drive = +80%
+
+            <br>
+            3 Drive = +400%
+
+            <br><br>
+
+            <span style="color:#ffcc55">
+                No Trigger จะชนะเฉพาะเมื่อ
+                Host ออก No Trigger ครบทุก Drive
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- LEADERBOARD -->
+
+<section class="panel"
+         style="margin-top:20px">
+
+    <div class="panel-title">
+        🏆 LEADERBOARD
+    </div>
+
+    <div class="card"
+         id="leaderboard">
+
+        <div class="empty">
+            ยังไม่มีผู้เล่น
+        </div>
+
+    </div>
+
+</section>
+
+</aside>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   CONFIG
+===================================================== */
+
+const MIN_BET = 100;
+const BET_STEP = 100;
+
+const STEP_BONUS_PERCENT = 300;
+
+const TRIGGERS = {
+
+    Critical:{
+        emoji:"🔴",
+        basePercent:100,
+        className:"t-critical",
+        label:"+100%"
+    },
+
+    Draw:{
+        emoji:"🔵",
+        basePercent:200,
+        className:"t-draw",
+        label:"+200%"
+    },
+
+    Front:{
+        emoji:"🟣",
+        basePercent:200,
+        className:"t-front",
+        label:"+200%"
+    },
+
+    Heal:{
+        emoji:"🟢",
+        basePercent:300,
+        className:"t-heal",
+        label:"+300%"
+    },
+
+    "Over Trigger":{
+        emoji:"🟠",
+        basePercent:800,
+        className:"t-over",
+        label:"+800%"
+    },
+
+    "No Trigger":{
+        emoji:"⚪",
+        basePercent:0,
+        className:"t-none",
+        label:"2D +80% / 3D +400%"
+    }
+};
+
+const TRIGGER_NAMES =
+    Object.keys(TRIGGERS);
+
+
+/* =====================================================
+   STATE
+===================================================== */
+
+let peer = null;
+let hostConnection = null;
+
+let isHost = false;
+
+let myId = "";
+let myName = "";
+
+let roomId = "";
+
+let players = {};
+let connections = {};
+
+let driveCount = 2;
+
+let selectedSteps =
+    [null,null,null];
+
+let currentRound = {
+    active:false,
+    round:1,
+    bets:{},
+    results:[],
+    currentDrive:0,
+    settled:false
+};
+
+let roadmap = [];
+let history = [];
+
+
+/* =====================================================
+   HELPERS
+===================================================== */
+
+function $(id){
+    return document.getElementById(id);
+}
+
+function money(n){
+    return Number(n).toLocaleString("en-US");
+}
+
+function setMessage(text){
+    $("systemMessage").textContent = text;
+}
+
+
+/* =====================================================
+   BET VALIDATION
+===================================================== */
+
+function normalizeBet(value){
+
+    value = Number(value);
+
+    if(!Number.isFinite(value)){
+        return MIN_BET;
+    }
+
+    value = Math.floor(value / BET_STEP)
+        * BET_STEP;
+
+    if(value < MIN_BET){
+        value = MIN_BET;
+    }
+
+    return value;
+}
+
+
+/* =====================================================
+   CREATE ROOM
+===================================================== */
+
+function createRoom(){
+
+    const name =
+        $("playerName").value.trim() ||
+        "Host";
+
+    let startingMoney =
+        Number($("startingMoney").value);
+
+    startingMoney =
+        normalizeBet(startingMoney);
+
+    $("startingMoney").value =
+        startingMoney;
+
+    myName = name;
+    isHost = true;
+
+    setMessage(
+        "กำลังสร้างห้อง..."
+    );
+
+    peer = new Peer();
+
+    peer.on("open",id=>{
+
+        myId = id;
+        roomId = id;
+
+        players = {};
+
+        players[myId] = {
+
+            id:myId,
+            name:myName,
+            wallet:startingMoney,
+            host:true,
+            connected:true,
+            bet:null
+
+        };
+
+        $("roomInfo")
+            .classList.remove("hidden");
+
+        $("roomCode")
+            .textContent = roomId;
+
+        $("hostPanel")
+            .classList.remove("hidden");
+
+        $("connectionStatus")
+            .textContent =
+            "● HOST ONLINE";
+
+        $("connectionStatus")
+            .className =
+            "status online";
+
+        setMessage(
+            "สร้างห้องสำเร็จ"
+        );
+
+        updateUI();
+
+    });
+
+
+    peer.on("connection",conn=>{
+
+        connections[conn.peer] = conn;
+
+        conn.on("data",data=>{
+
+            handleHostMessage(
+                conn,
+                data
+            );
+
+        });
+
+        conn.on("close",()=>{
+
+            if(players[conn.peer]){
+
+                players[conn.peer]
+                    .connected = false;
+
+                broadcastState();
+                updateUI();
+
+            }
+
+        });
+
+    });
+
+
+    peer.on("error",err=>{
+
+        console.error(err);
+
+        setMessage(
+            "เกิดข้อผิดพลาด: " +
+            err.type
+        );
+
+    });
+
+}
+
+
+/* =====================================================
+   JOIN
+===================================================== */
+
+function showJoin(){
+
+    $("joinBox")
+        .classList.remove("hidden");
+
+}
+
+function joinRoom(){
+
+    const target =
+        $("roomId").value.trim();
+
+    const name =
+        $("playerName").value.trim();
+
+    let startingMoney =
+        Number($("startingMoney").value);
+
+    startingMoney =
+        normalizeBet(startingMoney);
+
+    $("startingMoney").value =
+        startingMoney;
+
+
+    if(!target){
+        alert("กรุณาใส่ Room ID");
+        return;
+    }
+
+    if(!name){
+        alert("กรุณาใส่ชื่อ");
+        return;
+    }
+
+
+    myName = name;
+    isHost = false;
+
+    setMessage(
+        "กำลังเชื่อมต่อ Host..."
+    );
+
+
+    peer = new Peer();
+
+
+    peer.on("open",id=>{
+
+        myId = id;
+
+        hostConnection =
+            peer.connect(
+                target,
+                {reliable:true}
+            );
+
+
+        hostConnection.on("open",()=>{
+
+            hostConnection.send({
+
+                type:"join",
+
+                player:{
+
+                    id:myId,
+                    name:myName,
+                    wallet:startingMoney,
+                    host:false,
+                    connected:true,
+                    bet:null
+
+                }
+
+            });
+
+
+            $("connectionStatus")
+                .textContent =
+                "● CONNECTED";
+
+            $("connectionStatus")
+                .className =
+                "status online";
+
+            setMessage(
+                "เข้าร่วมห้องสำเร็จ"
+            );
+
+        });
+
+
+        hostConnection.on(
+            "data",
+            data=>{
+                handleGuestMessage(data);
+            }
+        );
+
+
+        hostConnection.on(
+            "close",
+            ()=>{
+
+                $("connectionStatus")
+                    .textContent =
+                    "● CONNECTION LOST";
+
+                $("connectionStatus")
+                    .className =
+                    "status offline";
+
+                setMessage(
+                    "การเชื่อมต่อกับ Host ถูกตัด"
+                );
+
+            }
+        );
+
+    });
+
+
+    peer.on("error",err=>{
+
+        setMessage(
+            "เชื่อมต่อไม่สำเร็จ: " +
+            err.type
+        );
+
+    });
+
+}
+
+
+/* =====================================================
+   HOST MESSAGE
+===================================================== */
+
+function handleHostMessage(conn,data){
+
+    if(!data || !data.type)
+        return;
+
+
+    if(data.type === "join"){
+
+        players[data.player.id] = {
+
+            ...data.player,
+            connected:true
+
+        };
+
+        connections[data.player.id] =
+            conn;
+
+        broadcastState();
+        updateUI();
+
+        return;
+    }
+
+
+    if(data.type === "bet"){
+
+        if(!players[conn.peer])
+            return;
+
+        if(currentRound.settled)
+            return;
+
+
+        if(currentRound.bets[conn.peer])
+            return;
+
+
+        const amount =
+            normalizeBet(data.amount);
+
+
+        if(
+            amount >
+            players[conn.peer].wallet
+        ){
+            return;
+        }
+
+
+        const steps =
+            data.steps.slice(
+                0,
+                driveCount
+            );
+
+
+        if(
+            steps.length !==
+            driveCount
+        ){
+            return;
+        }
+
+
+        currentRound.bets[conn.peer] = {
+
+            amount:amount,
+            steps:steps
+
+        };
+
+
+        players[conn.peer].bet =
+            currentRound.bets[conn.peer];
+
+
+        broadcastState();
+        updateUI();
+
+        return;
+    }
+
+}
+
+
+/* =====================================================
+   GUEST MESSAGE
+===================================================== */
+
+function handleGuestMessage(data){
+
+    if(!data)
+        return;
+
+
+    if(data.type === "state"){
+
+        players =
+            data.players;
+
+        currentRound =
+            data.round;
+
+        roadmap =
+            data.roadmap || [];
+
+        history =
+            data.history || [];
+
+
+        if(
+            currentRound.results.length
+        ){
+            selectedSteps =
+                selectedSteps;
+        }
+
+
+        updateUI();
+
+        return;
+    }
+
+
+    if(data.type === "reset"){
+
+        location.reload();
+
+    }
+
+}
+
+
+/* =====================================================
+   BROADCAST
+===================================================== */
+
+function broadcastState(){
+
+    const packet = {
+
+        type:"state",
+
+        players:players,
+
+        round:currentRound,
+
+        roadmap:roadmap,
+
+        history:history
+
+    };
+
+
+    Object.values(connections)
+        .forEach(conn=>{
+
+            if(conn && conn.open){
+
+                conn.send(packet);
+
+            }
+
+        });
+
+}
+
+
+/* =====================================================
+   DRIVE COUNT
+===================================================== */
+
+function changeDriveCount(){
+
+    driveCount =
+        Number(
+            $("driveCount").value
+        );
+
+    selectedSteps =
+        [null,null,null];
+
+    renderSteps();
+
+}
+
+
+/* =====================================================
+   RENDER STEPS
+===================================================== */
+
+function renderSteps(){
+
+    const container =
+        $("stepContainer");
+
+    container.innerHTML = "";
+
+
+    for(
+        let i=0;
+        i<driveCount;
+        i++
+    ){
+
+        const div =
+            document.createElement("div");
+
+        div.className =
+            "step-card";
+
+
+        div.innerHTML = `
+
+            <h4>
+                DRIVE ${i+1}
+            </h4>
+
+            <div id="stepButtons${i}"
+                 class="trigger-grid"
+                 style="grid-template-columns:1fr 1fr">
+
+            </div>
+
+        `;
+
+
+        container.appendChild(div);
+
+        renderStepButtons(i);
+
+    }
+
+
+    updateBetSummary();
+
+}
+
+
+/* =====================================================
+   STEP BUTTONS
+===================================================== */
+
+function renderStepButtons(step){
+
+    const box =
+        $("stepButtons"+step);
+
+    box.innerHTML = "";
+
+
+    TRIGGER_NAMES.forEach(name=>{
+
+        const t =
+            TRIGGERS[name];
+
+
+        const button =
+            document.createElement("button");
+
+
+        button.className =
+            "trigger " +
+            t.className;
+
+
+        if(
+            selectedSteps[step] === name
+        ){
+            button.classList.add(
+                "selected"
+            );
+        }
+
+
+        button.innerHTML = `
+
+            ${t.emoji}
+            ${name}
+
+            <small>
+                ${t.label}
+            </small>
+
+        `;
+
+
+        button.onclick = ()=>{
+
+            selectedSteps[step] =
+                name;
+
+            renderSteps();
+
+        };
+
+
+        box.appendChild(button);
+
+    });
+
+}
+
+
+/* =====================================================
+   BET SUMMARY
+===================================================== */
+
+function updateBetSummary(){
+
+    const amount =
+        normalizeBet(
+            $("betAmount").value
+        );
+
+
+    let html = "";
+
+
+    for(
+        let i=0;
+        i<driveCount;
+        i++
+    ){
+
+        const trigger =
+            selectedSteps[i];
+
+
+        if(trigger){
+
+            html += `
+
+                Drive ${i+1}:
+                <b>
+                    ${TRIGGERS[trigger].emoji}
+                    ${trigger}
+                    ${TRIGGERS[trigger].label}
+                </b>
+
+                <br>
+
+            `;
+
+        }else{
+
+            html += `
+
+                Drive ${i+1}:
+                <b>ยังไม่เลือก</b>
+                <br>
+
+            `;
+
+        }
+
+    }
+
+
+    html +=
+        `<hr style="border-color:#30385e">`;
+
+
+    html +=
+        `เดิมพัน:
+         <b>${money(amount)}</b>
+         เครดิต`;
+
+
+    $("betSummary").innerHTML =
+        html;
+
+}
+
+
+/* =====================================================
+   BET AMOUNT
+===================================================== */
+
+function adjustBet(delta){
+
+    const player =
+        players[myId];
+
+    const max =
+        player
+            ? player.wallet
+            : 0;
+
+
+    let amount =
+        Number(
+            $("betAmount").value
+        ) || MIN_BET;
+
+
+    amount += delta;
+
+
+    if(amount < MIN_BET)
+        amount = MIN_BET;
+
+
+    if(max > 0 && amount > max)
+        amount = max;
+
+
+    amount =
+        Math.floor(
+            amount / BET_STEP
+        ) * BET_STEP;
+
+
+    if(amount < MIN_BET)
+        amount = MIN_BET;
+
+
+    $("betAmount").value =
+        amount;
+
+    updateBetSummary();
+
+}
+
+
+function setHotBet(type){
+
+    const player =
+        players[myId];
+
+
+    if(!player){
+
+        alert(
+            "กรุณาเข้าห้องก่อน"
+        );
+
+        return;
+    }
+
+
+    const wallet =
+        player.wallet;
+
+
+    let amount;
+
+
+    if(type === "quarter"){
+
+        amount =
+            Math.floor(
+                wallet * .25 / BET_STEP
+            ) * BET_STEP;
+
+    }
+
+    else if(type === "half"){
+
+        amount =
+            Math.floor(
+                wallet * .50 / BET_STEP
+            ) * BET_STEP;
+
+    }
+
+    else if(type === "all"){
+
+        amount =
+            Math.floor(
+                wallet / BET_STEP
+            ) * BET_STEP;
+
+    }
+
+    else{
+
+        amount =
+            Number(type);
+
+    }
+
+
+    if(amount < MIN_BET)
+        amount = MIN_BET;
+
+
+    if(amount > wallet)
+        amount = wallet;
+
+
+    amount =
+        Math.floor(
+            amount / BET_STEP
+        ) * BET_STEP;
+
+
+    $("betAmount").value =
+        amount;
+
+    updateBetSummary();
+
+}
+
+
+/* =====================================================
+   SUBMIT BET
+===================================================== */
+
+function submitBet(){
+
+    if(!peer){
+
+        alert(
+            "กรุณาเข้าหรือสร้างห้องก่อน"
+        );
+
+        return;
+    }
+
+
+    if(
+        currentRound.bets &&
+        currentRound.bets[myId]
+    ){
+
+        alert(
+            "คุณเดิมพันรอบนี้ไปแล้ว"
+        );
+
+        return;
+    }
+
+
+    const player =
+        players[myId];
+
+
+    if(!player){
+
+        alert(
+            "ยังไม่ได้เข้าสู่ระบบผู้เล่น"
+        );
+
+        return;
+    }
+
+
+    let amount =
+        normalizeBet(
+            $("betAmount").value
+        );
+
+
+    if(amount < MIN_BET){
+
+        alert(
+            "เดิมพันขั้นต่ำคือ 100 เครดิต"
+        );
+
+        return;
+    }
+
+
+    if(amount > player.wallet){
+
+        alert(
+            "เครดิตไม่เพียงพอ"
+        );
+
+        return;
+    }
+
+
+    for(
+        let i=0;
+        i<driveCount;
+        i++
+    ){
+
+        if(!selectedSteps[i]){
+
+            alert(
+                "กรุณาเลือก Trigger ให้ครบทุก Drive"
+            );
+
+            return;
+        }
+
+    }
+
+
+    const bet = {
+
+        amount:amount,
+
+        steps:
+            selectedSteps.slice(
+                0,
+                driveCount
+            )
+
+    };
+
+
+    if(isHost){
+
+        currentRound.bets[myId] =
+            bet;
+
+        players[myId].bet =
+            bet;
+
+        broadcastState();
+        updateUI();
+
+    }else{
+
+        hostConnection.send({
+
+            type:"bet",
+
+            amount:amount,
+
+            steps:bet.steps
+
+        });
+
+
+        $("submitBetBtn")
+            .disabled = true;
+
+
+        setMessage(
+            "ส่งการเดิมพันให้ Host แล้ว"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   HOST RESULT BUTTONS
+===================================================== */
+
+function renderResultButtons(){
+
+    const box =
+        $("resultButtons");
+
+    box.innerHTML = "";
+
+
+    TRIGGER_NAMES.forEach(name=>{
+
+        const t =
+            TRIGGERS[name];
+
+
+        const button =
+            document.createElement("button");
+
+
+        button.className =
+            "result-btn " +
+            t.className;
+
+
+        button.innerHTML = `
+
+            ${t.emoji}
+            <br>
+            ${name}
+
+        `;
+
+
+        if(
+            currentRound.results[
+                currentRound.currentDrive
+            ] === name
+        ){
+
+            button.classList.add(
+                "selected"
+            );
+
+        }
+
+
+        button.onclick = ()=>{
+
+            currentRound.results[
+                currentRound.currentDrive
+            ] = name;
+
+
+            renderResultButtons();
+            renderDriveStatus();
+
+        };
+
+
+        box.appendChild(button);
+
+    });
+
+}
+
+
+/* =====================================================
+   DRIVE STATUS
+===================================================== */
+
+function renderDriveStatus(){
+
+    const box =
+        $("driveStatus");
+
+    box.innerHTML = "";
+
+
+    for(
+        let i=0;
+        i<driveCount;
+        i++
+    ){
+
+        const result =
+            currentRound.results[i];
+
+
+        const div =
+            document.createElement("div");
+
+
+        div.className =
+            "drive";
+
+
+        if(result)
+            div.classList.add("done");
+
+
+        if(
+            i ===
+            currentRound.currentDrive
+        ){
+
+            div.classList.add(
+                "current"
+            );
+
+        }
+
+
+        div.innerHTML = `
+
+            <strong>
+                DRIVE ${i+1}
+            </strong>
+
+            ${
+                result
+                    ? TRIGGERS[result].emoji +
+                      " " +
+                      result
+                    : "รอผล"
+            }
+
+        `;
+
+
+        box.appendChild(div);
+
+    }
+
+}
+
+
+/* =====================================================
+   CONFIRM DRIVE
+===================================================== */
+
+function confirmDriveResult(){
+
+    if(!isHost)
+        return;
+
+
+    const index =
+        currentRound.currentDrive;
+
+
+    const result =
+        currentRound.results[index];
+
+
+    if(!result){
+
+        alert(
+            "กรุณาเลือกผลของ Drive นี้"
+        );
+
+        return;
+    }
+
+
+    if(index < driveCount - 1){
+
+        currentRound.currentDrive++;
+
+
+        broadcastState();
+
+        renderResultButtons();
+        renderDriveStatus();
+        updateUI();
+
+    }else{
+
+        alert(
+            "กรอกผลครบทุก Drive แล้ว\n" +
+            "กด 'ปิดรอบและคำนวณเงิน'"
+        );
+
+        broadcastState();
+
+    }
+
+}
+
+
+/* =====================================================
+   PAYOUT
+===================================================== */
+
+/*
+
+NORMAL TRIGGER
+
+Base:
+Critical = +100%
+Draw = +200%
+Front = +200%
+Heal = +300%
+Over = +800%
+
+Step:
+1 Drive = Base
+2 Drive = Base + 300% ของ Base
+3 Drive = Base + 600% ของ Base
+
+
+NO TRIGGER
+
+2 Drive = +80%
+3 Drive = +400%
+
+สำคัญ:
+
+No Trigger จะชนะได้เฉพาะ:
+
+2D:
+Result = No Trigger + No Trigger
+
+3D:
+Result = No Trigger + No Trigger + No Trigger
+
+*/
+
+function calculatePayout(
+    betAmount,
+    firstTrigger,
+    correctSteps,
+    totalSteps,
+    allNoTrigger
+){
+
+    /* NO TRIGGER */
+
+    if(firstTrigger === "No Trigger"){
+
+        if(!allNoTrigger){
+
+            return {
+                win:false,
+                profit:-betAmount,
+                payout:0
+            };
+
+        }
+
+
+        let percent =
+            totalSteps === 2
+                ? 80
+                : 400;
+
+
+        const profit =
+            Math.floor(
+                betAmount *
+                percent /
+                100
+            );
+
+
+        return {
+
+            win:true,
+
+            profit:profit,
+
+            payout:
+                betAmount + profit
+
+        };
+
+    }
+
+
+    /* NORMAL TRIGGER */
+
+    if(
+        correctSteps !==
+        totalSteps
+    ){
+
+        return {
+
+            win:false,
+
+            profit:-betAmount,
+
+            payout:0
+
+        };
+
+    }
+
+
+    const basePercent =
+        TRIGGERS[firstTrigger]
+            .basePercent;
+
+
+    const stepMultiplier =
+        1 +
+        (
+            (totalSteps - 1) *
+            3
+        );
+
+
+    const profit =
+        Math.floor(
+
+            betAmount *
+
+            (basePercent / 100) *
+
+            stepMultiplier
+
+        );
+
+
+    return {
+
+        win:true,
+
+        profit:profit,
+
+        payout:
+            betAmount + profit
+
+    };
+
+}
+
+
+/* =====================================================
+   SETTLE
+===================================================== */
+
+function settleRound(){
+
+    if(!isHost)
+        return;
+
+
+    if(
+        currentRound.results.length <
+        driveCount
+    ){
+
+        alert(
+            "ยังระบุผลไม่ครบ"
+        );
+
+        return;
+
+    }
+
+
+    for(
+        let i=0;
+        i<driveCount;
+        i++
+    ){
+
+        if(
+            !currentRound.results[i]
+        ){
+
+            alert(
+                "ผล Drive ยังไม่ครบ"
+            );
+
+            return;
+
+        }
+
+    }
+
+
+    const roundResults = {};
+
+
+    Object.entries(
+        currentRound.bets
+    ).forEach(
+        ([id,bet])=>{
+
+            const player =
+                players[id];
+
+
+            if(!player)
+                return;
+
+
+            let correctSteps = 0;
+
+
+            for(
+                let i=0;
+                i<driveCount;
+                i++
+            ){
+
+                if(
+                    bet.steps[i] ===
+                    currentRound.results[i]
+                ){
+
+                    correctSteps++;
+
+                }
+
+            }
+
+
+            /*
+               No Trigger ต้องถูกทั้งหมด
+            */
+
+            const allNoTrigger =
+                currentRound.results.every(
+                    r =>
+                        r === "No Trigger"
+                );
+
+
+            const payout =
+                calculatePayout(
+
+                    bet.amount,
+
+                    bet.steps[0],
+
+                    correctSteps,
+
+                    driveCount,
+
+                    allNoTrigger
+
+                );
+
+
+            /*
+               หักเดิมพันก่อน
+            */
+
+            player.wallet -=
+                bet.amount;
+
+
+            /*
+               ชนะ:
+               คืนเงินเดิมพัน + กำไร
+            */
+
+            if(payout.win){
+
+                player.wallet +=
+                    bet.amount +
+                    payout.profit;
+
+            }
+
+
+            roundResults[id] = {
+
+                id:id,
+
+                name:player.name,
+
+                bet:bet.amount,
+
+                steps:bet.steps,
+
+                correct:correctSteps,
+
+                total:driveCount,
+
+                win:payout.win,
+
+                profit:
+                    payout.win
+                        ? payout.profit
+                        : -bet.amount,
+
+                wallet:player.wallet
+
+            };
+
+        }
+    );
+
+
+    /*
+       Roadmap
+    */
+
+    const winnerCount =
+        Object.values(roundResults)
+            .filter(x=>x.win)
+            .length;
+
+
+    const roadResult =
+        winnerCount > 0
+            ? "W"
+            : "L";
+
+
+    roadmap.push(
+        roadResult
+    );
+
+
+    /*
+       History
+    */
+
+    history.unshift({
+
+        round:
+            currentRound.round,
+
+        drives:
+            currentRound.results.slice(),
+
+        results:
+            roundResults,
+
+        timestamp:
+            new Date()
+                .toLocaleTimeString()
+
+    });
+
+
+    /*
+       New round
+    */
+
+    currentRound = {
+
+        active:false,
+
+        round:
+            currentRound.round + 1,
+
+        bets:{},
+
+        results:[],
+
+        currentDrive:0,
+
+        settled:false
+
+    };
+
+
+    Object.values(players)
+        .forEach(p=>{
+
+            p.bet = null;
+
+        });
+
+
+    broadcastState();
+
+    updateUI();
+
+
+    if(winnerCount){
+
+        setMessage(
+            `ปิดรอบแล้ว • ` +
+            `มีผู้ชนะ ${winnerCount} คน`
+        );
+
+    }else{
+
+        setMessage(
+            "ปิดรอบแล้ว • ไม่มีผู้ชนะ"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   PLAYERS
+===================================================== */
+
+function renderPlayers(){
+
+    const box =
+        $("playerList");
+
+
+    const list =
+        Object.values(players);
+
+
+    if(!list.length){
+
+        box.innerHTML =
+            `<div class="empty">
+                ยังไม่มีผู้เล่น
+             </div>`;
+
+        return;
+
+    }
+
+
+    box.innerHTML = "";
+
+
+    list.forEach(p=>{
+
+        const div =
+            document.createElement("div");
+
+
+        div.className =
+            "player-row";
+
+
+        div.innerHTML = `
+
+            <div>
+
+                <div class="player-name">
+
+                    ${escapeHTML(p.name)}
+
+                </div>
+
+                <div class="player-role">
+
+                    ${
+                        p.host
+                            ? "👑 HOST"
+                            : "PLAYER"
+                    }
+
+                    ${
+                        p.connected
+                            ? " • Online"
+                            : " • Offline"
+                    }
+
+                </div>
+
+            </div>
+
+
+            <div class="money">
+
+                ${money(p.wallet)}
+
+            </div>
+
+
+            <div>
+
+                ${
+                    p.bet
+                        ? "🎯 BET"
+                        : "—"
+                }
+
+            </div>
+
+        `;
+
+
+        box.appendChild(div);
+
+    });
+
+}
+
+
+/* =====================================================
+   LEADERBOARD
+===================================================== */
+
+function renderLeaderboard(){
+
+    const box =
+        $("leaderboard");
+
+
+    const list =
+        Object.values(players)
+            .sort(
+                (a,b)=>
+                    b.wallet -
+                    a.wallet
+            );
+
+
+    if(!list.length){
+
+        box.innerHTML =
+            `<div class="empty">
+                ยังไม่มีผู้เล่น
+             </div>`;
+
+        return;
+
+    }
+
+
+    box.innerHTML = "";
+
+
+    list.forEach(
+        (p,index)=>{
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "leader-row";
+
+
+            row.innerHTML = `
+
+                <div class="rank">
+                    #${index+1}
+                </div>
+
+                <div>
+
+                    <b>
+                        ${escapeHTML(p.name)}
+                    </b>
+
+                    <div class="small">
+
+                        ${
+                            p.host
+                                ? "HOST"
+                                : "PLAYER"
+                        }
+
+                    </div>
+
+                </div>
+
+                <strong class="money">
+
+                    ${money(p.wallet)}
+
+                </strong>
+
+            `;
+
+
+            box.appendChild(row);
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   ROADMAP
+===================================================== */
+
+function renderRoadmap(){
+
+    const box =
+        $("roadmap");
+
+
+    if(!roadmap.length){
+
+        box.innerHTML =
+            `<div class="empty">
+                ยังไม่มีผล
+             </div>`;
+
+        return;
+
+    }
+
+
+    box.innerHTML = "";
+
+
+    roadmap.forEach(r=>{
+
+        const d =
+            document.createElement(
+                "div"
+            );
+
+
+        d.className =
+            "road " +
+            (
+                r === "W"
+                    ? "road-w"
+                    : r === "L"
+                        ? "road-l"
+                        : "road-d"
+            );
+
+
+        d.textContent = r;
+
+
+        box.appendChild(d);
+
+    });
+
+}
+
+
+/* =====================================================
+   HISTORY
+===================================================== */
+
+function renderHistory(){
+
+    const box =
+        $("history");
+
+
+    if(!history.length){
+
+        box.innerHTML =
+            `<div class="empty">
+                ยังไม่มีประวัติ
+             </div>`;
+
+        return;
+
+    }
+
+
+    box.innerHTML = "";
+
+
+    history.forEach(round=>{
+
+        Object.values(
+            round.results
+        ).forEach(result=>{
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "history-row";
+
+
+            const icon =
+                result.win
+                    ? "W"
+                    : "L";
+
+
+            const iconClass =
+                result.win
+                    ? "win"
+                    : "loss";
+
+
+            const profitText =
+                result.profit >= 0
+                    ? "+" +
+                      money(result.profit)
+                    : money(result.profit);
+
+
+            row.innerHTML = `
+
+                <div class="history-icon ${iconClass}">
+                    ${icon}
+                </div>
+
+
+                <div>
+
+                    <b>
+                        Round #${round.round}
+                        •
+                        ${escapeHTML(result.name)}
+                    </b>
+
+                    <div class="small">
+
+                        เดิมพัน
+                        ${money(result.bet)}
+
+                        • ถูก
+                        ${result.correct}/${result.total}
+                        Step
+
+                        <br>
+
+                        ${result.steps.join(" → ")}
+
+                        <br>
+
+                        ผลจริง:
+                        ${round.drives.join(" → ")}
+
+                    </div>
+
+                </div>
+
+
+                <div class="${
+                    result.profit >= 0
+                        ? "positive"
+                        : "negative"
+                }">
+
+                    ${profitText}
+
+                </div>
+
+            `;
+
+
+            box.appendChild(row);
+
+        });
+
+    });
+
+}
+
+
+/* =====================================================
+   ROUND INFO
+===================================================== */
+
+function renderRoundInfo(){
+
+    const box =
+        $("roundInfo");
+
+
+    const bets =
+        Object.values(
+            currentRound.bets || {}
+        ).length;
+
+
+    const playerCount =
+        Object.keys(players).length;
+
+
+    box.innerHTML = `
+
+        <b>
+            Round #${currentRound.round}
+        </b>
+
+        <br>
+
+        Drive:
+        ${driveCount}
+
+        <br>
+
+        ส่งเดิมพันแล้ว:
+        ${bets}/${playerCount}
+
+    `;
+
+}
+
+
+/* =====================================================
+   UPDATE UI
+===================================================== */
+
+function updateUI(){
+
+    renderPlayers();
+
+    renderLeaderboard();
+
+    renderRoadmap();
+
+    renderHistory();
+
+    renderRoundInfo();
+
+
+    if(isHost){
+
+        $("hostPanel")
+            .classList.remove(
+                "hidden"
+            );
+
+        renderDriveStatus();
+
+        renderResultButtons();
+
+    }
+
+
+    updateBetSummary();
+
+}
+
+
+/* =====================================================
+   COPY ROOM
+===================================================== */
+
+function copyRoom(){
+
+    if(!roomId)
+        return;
+
+
+    navigator.clipboard
+        .writeText(roomId)
+        .then(()=>{
+
+            setMessage(
+                "คัดลอก Room ID แล้ว"
+            );
+
+        });
+
+}
+
+
+/* =====================================================
+   ESCAPE
+===================================================== */
+
+function escapeHTML(text){
+
+    return String(text)
+
+        .replace(/&/g,"&amp;")
+
+        .replace(/</g,"&lt;")
+
+        .replace(/>/g,"&gt;")
+
+        .replace(/"/g,"&quot;")
+
+        .replace(/'/g,"&#039;");
+
+}
+
+
+/* =====================================================
+   INPUT EVENTS
+===================================================== */
+
+$("betAmount")
+    .addEventListener(
+        "input",
+        ()=>{
+            
+            let value =
+                Number(
+                    $("betAmount").value
+                );
+
+            if(value < MIN_BET){
+                value = MIN_BET;
+            }
+
+            value =
+                Math.floor(
+                    value /
+                    BET_STEP
+                ) * BET_STEP;
+
+            $("betAmount").value =
+                value;
+
+            updateBetSummary();
+
+        }
+    );
+
+
+/* =====================================================
+   INITIALIZE
+===================================================== */
+
+renderSteps();
+
+updateUI();
+
+</script>
+
+</body>
+</html>
